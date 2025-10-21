@@ -70,8 +70,6 @@
 /data/workspace/wow-font-manager/src/bin/Release/net8.0/runtimes/win-arm64/native/libSkiaSharp.dll
 /data/workspace/wow-font-manager/src/bin/Release/net8.0/runtimes/win-x64/native/libSkiaSharp.dll
 /data/workspace/wow-font-manager/src/bin/Release/net8.0/runtimes/win-x86/native/libSkiaSharp.dll
-/data/workspace/wow-font-manager/src/obj/Release/net8.0/WowFontManager.csproj.Fody.CopyLocal.cache
-/data/workspace/wow-font-manager/src/obj/Release/net8.0/WowFontManager.csproj.Fody.RuntimeCopyLocal.cache
 /data/workspace/wow-font-manager/src/obj/Release/net8.0/WowFontM.8B335436.Up2Date
 /data/workspace/wow-font-manager/src/obj/Release/net8.0/WowFontManager.dll
 /data/workspace/wow-font-manager/src/obj/Release/net8.0/refint/WowFontManager.dll

@@ -495,6 +495,12 @@
           "lib/net5.0/MicroCom.Runtime.dll": {}
         }
       },
+      "Microsoft.NET.ILLink.Tasks/8.0.21": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "ReactiveUI/19.5.41": {
         "type": "package",
         "dependencies": {
@@ -1155,6 +1161,12 @@
           "lib/net5.0/MicroCom.Runtime.dll": {}
         }
       },
+      "Microsoft.NET.ILLink.Tasks/8.0.21": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "ReactiveUI/19.5.41": {
         "type": "package",
         "dependencies": {
@@ -1775,6 +1787,12 @@
         },
         "runtime": {
           "lib/net5.0/MicroCom.Runtime.dll": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/8.0.21": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
       },
       "ReactiveUI/19.5.41": {
@@ -2399,6 +2417,12 @@
           "lib/net5.0/MicroCom.Runtime.dll": {}
         }
       },
+      "Microsoft.NET.ILLink.Tasks/8.0.21": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "ReactiveUI/19.5.41": {
         "type": "package",
         "dependencies": {
@@ -3019,6 +3043,12 @@
         },
         "runtime": {
           "lib/net5.0/MicroCom.Runtime.dll": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/8.0.21": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
       },
       "ReactiveUI/19.5.41": {
@@ -3916,6 +3946,57 @@
         "microcom.runtime.nuspec"
       ]
     },
+    "Microsoft.NET.ILLink.Tasks/8.0.21": {
+      "sha512": "s8H5PZQs50OcNkaB6Si54+v3GWM7vzs6vxFRMlD3aXsbM+aPCtod62gmK0BYWou9diGzmo56j8cIf/PziijDqQ==",
+      "type": "package",
+      "path": "microsoft.net.illink.tasks/8.0.21",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "Sdk/Sdk.props",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
+        "analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
+        "build/Microsoft.NET.ILLink.Analyzers.props",
+        "build/Microsoft.NET.ILLink.Tasks.props",
+        "build/Microsoft.NET.ILLink.targets",
+        "microsoft.net.illink.tasks.8.0.21.nupkg.sha512",
+        "microsoft.net.illink.tasks.nuspec",
+        "tools/net472/ILLink.Tasks.dll",
+        "tools/net472/ILLink.Tasks.dll.config",
+        "tools/net472/Mono.Cecil.Mdb.dll",
+        "tools/net472/Mono.Cecil.Pdb.dll",
+        "tools/net472/Mono.Cecil.Rocks.dll",
+        "tools/net472/Mono.Cecil.dll",
+        "tools/net472/Sdk/Sdk.props",
+        "tools/net472/System.Buffers.dll",
+        "tools/net472/System.Collections.Immutable.dll",
+        "tools/net472/System.Memory.dll",
+        "tools/net472/System.Numerics.Vectors.dll",
+        "tools/net472/System.Reflection.Metadata.dll",
+        "tools/net472/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/net472/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/net472/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/net472/build/Microsoft.NET.ILLink.targets",
+        "tools/net8.0/ILLink.Tasks.deps.json",
+        "tools/net8.0/ILLink.Tasks.dll",
+        "tools/net8.0/Mono.Cecil.Mdb.dll",
+        "tools/net8.0/Mono.Cecil.Pdb.dll",
+        "tools/net8.0/Mono.Cecil.Rocks.dll",
+        "tools/net8.0/Mono.Cecil.dll",
+        "tools/net8.0/Sdk/Sdk.props",
+        "tools/net8.0/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/net8.0/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/net8.0/build/Microsoft.NET.ILLink.targets",
+        "tools/net8.0/illink.deps.json",
+        "tools/net8.0/illink.dll",
+        "tools/net8.0/illink.runtimeconfig.json",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "ReactiveUI/19.5.41": {
       "sha512": "qusIoJHhzNFm/Ei52wwesy15le/NAMWm40UOz2boaWcBntqOJJPR6YucDUibHNo5v9opNP7ZCAMa+w3rzX6AIw==",
       "type": "package",
@@ -4500,6 +4581,7 @@
       "Avalonia.Skia >= 11.3.6",
       "Avalonia.Themes.Fluent >= 11.3.6",
       "CommunityToolkit.Mvvm >= 8.2.1",
+      "Microsoft.NET.ILLink.Tasks >= 8.0.21",
       "ReactiveUI.Fody >= 19.5.41",
       "SkiaSharp >= 2.88.9"
     ]
@@ -4575,6 +4657,12 @@
           "CommunityToolkit.Mvvm": {
             "target": "Package",
             "version": "[8.2.1, )"
+          },
+          "Microsoft.NET.ILLink.Tasks": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[8.0.21, )",
+            "autoReferenced": true
           },
           "ReactiveUI.Fody": {
             "target": "Package",

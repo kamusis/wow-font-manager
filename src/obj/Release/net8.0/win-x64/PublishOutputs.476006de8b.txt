@@ -1,0 +1,5 @@
+/data/workspace/wow-font-manager/publish/win-x64/WowFontManager.pdb
+/data/workspace/wow-font-manager/publish/win-x64/av_libglesv2.dll
+/data/workspace/wow-font-manager/publish/win-x64/libHarfBuzzSharp.dll
+/data/workspace/wow-font-manager/publish/win-x64/libSkiaSharp.dll
+/data/workspace/wow-font-manager/publish/win-x64/WowFontManager.exe

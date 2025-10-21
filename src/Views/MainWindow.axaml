@@ -3,18 +3,223 @@
         xmlns:vm="using:WowFontManager.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="WowFontManager.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="WowFontManager">
+        Title="WoW Font Manager"
+        Width="1200" Height="800">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2196F3" CornerRadius="5" Padding="15" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="WoW Font Manager" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Customize your World of Warcraft fonts" FontSize="14" Foreground="#E3F2FD" Margin="0,5,0,0"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Detect Clients" 
+                        Command="{Binding DetectClientsCommand}"
+                        Padding="15,8" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*,350">
+            
+            <!-- Left Panel: WoW Clients & Font Browser -->
+            <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,10,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+                    
+                    <!-- WoW Client Selection -->
+                    <TextBlock Grid.Row="0" Text="WoW Client" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+                    <ComboBox Grid.Row="1" 
+                              ItemsSource="{Binding WoWClients}"
+                              SelectedItem="{Binding SelectedClient}"
+                              Margin="0,0,0,15">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding ClientType}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{Binding Locale}"/>
+                                    <Run Text=")"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Font Browser Header -->
+                    <TextBlock Grid.Row="2" Text="Available Fonts" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+                    
+                    <!-- Font List -->
+                    <Border Grid.Row="3" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3" Margin="0,0,0,10">
+                        <ListBox ItemsSource="{Binding AvailableFonts}"
+                                 SelectedItem="{Binding SelectedFont}"
+                                 Background="White">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="5">
+                                        <TextBlock Text="{Binding FontFamily}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding FileName}" FontSize="11" Foreground="Gray"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+
+                    <!-- Browse Fonts Button -->
+                    <Button Grid.Row="4" Content="Browse System Fonts" 
+                            Command="{Binding BrowseFontsCommand}"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
+            </Border>
+
+            <!-- Center Panel: Font Preview -->
+            <Border Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="5" Padding="15" Margin="0,0,10,0">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    
+                    <TextBlock Grid.Row="0" Text="Font Preview" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    
+                    <!-- Preview Controls -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,100" Margin="0,0,0,15">
+                        <TextBlock Grid.Column="0" Text="Size:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Slider Grid.Column="1" 
+                                Minimum="12" Maximum="72" 
+                                Value="{Binding PreviewSize}"
+                                TickFrequency="4"
+                                IsSnapToTickEnabled="True"/>
+                        <TextBlock Grid.Column="2" Text="{Binding PreviewSize}" 
+                                   VerticalAlignment="Center" 
+                                   Margin="10,0" Width="30"/>
+                    </Grid>
+
+                    <!-- Preview Area -->
+                    <Border Grid.Row="2" 
+                            Background="White" 
+                            BorderBrush="#BDBDBD" 
+                            BorderThickness="1" 
+                            CornerRadius="3"
+                            Padding="20">
+                        <ScrollViewer>
+                            <StackPanel Spacing="20">
+                                <TextBlock Text="{Binding SelectedFont.FontFamily, FallbackValue='Select a font to preview'}" 
+                                           FontSize="{Binding PreviewSize}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding PreviewText}" 
+                                           FontSize="{Binding PreviewSize}"
+                                           TextWrapping="Wrap"
+                                           IsVisible="{Binding SelectedFont, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <TextBlock Text="ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+                                           FontSize="{Binding PreviewSize}"
+                                           IsVisible="{Binding SelectedFont, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <TextBlock Text="abcdefghijklmnopqrstuvwxyz" 
+                                           FontSize="{Binding PreviewSize}"
+                                           IsVisible="{Binding SelectedFont, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <TextBlock Text="0123456789" 
+                                           FontSize="{Binding PreviewSize}"
+                                           IsVisible="{Binding SelectedFont, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Preview Text Input -->
+                    <TextBox Grid.Row="3" 
+                             Text="{Binding PreviewText}" 
+                             Watermark="Enter custom preview text..."
+                             Margin="0,10,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel: Actions & Backups -->
+            <Border Grid.Column="2" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="5" Padding="10">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+                    
+                    <!-- Selected Font Info -->
+                    <Border Grid.Row="0" Background="#F5F5F5" CornerRadius="3" Padding="10" Margin="0,0,0,10">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Selected Font" FontWeight="Bold" FontSize="12"/>
+                            <TextBlock Text="{Binding SelectedFont.FontFamily, FallbackValue='None'}" FontSize="14"/>
+                            <TextBlock Text="{Binding SelectedFont.FileName, FallbackValue=''}" 
+                                       FontSize="11" Foreground="Gray"/>
+                            <StackPanel Orientation="Horizontal" Spacing="5" 
+                                        IsVisible="{Binding SelectedFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <TextBlock Text="Glyphs:" FontSize="11" Foreground="Gray"/>
+                                <TextBlock Text="{Binding SelectedFont.GlyphCount}" FontSize="11" Foreground="Gray"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Replace Button -->
+                    <Button Grid.Row="1" 
+                            Content="Replace WoW Fonts" 
+                            Command="{Binding ReplaceFontsCommand}"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Padding="0,12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Margin="0,0,0,15"/>
+
+                    <!-- Warning -->
+                    <Border Grid.Row="2" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" 
+                            CornerRadius="3" Padding="10" Margin="0,0,0,10">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="⚠️ Warning" FontWeight="Bold" Foreground="#F57C00"/>
+                            <TextBlock Text="Make sure WoW is closed before replacing fonts." 
+                                       TextWrapping="Wrap" FontSize="11" Foreground="#E65100"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Backups List -->
+                    <Grid Grid.Row="3" RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Text="Backups" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+                        <Border Grid.Row="1" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3">
+                            <ListBox ItemsSource="{Binding Backups}" Background="White">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="5">
+                                            <TextBlock Text="{Binding BackupDate, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" 
+                                                       FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="{Binding DisplayName}" 
+                                                       FontSize="10" Foreground="Gray"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+                    </Grid>
+
+                    <!-- Refresh Backups Button -->
+                    <Button Grid.Row="4" 
+                            Content="Refresh Backups" 
+                            Command="{Binding LoadBackupsCommand}"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#37474F" CornerRadius="5" Padding="10" Margin="0,10,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" 
+                           Text="{Binding StatusMessage}" 
+                           Foreground="White" 
+                           VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding SelectedClient.DisplayName, FallbackValue='No client selected'}" 
+                           Foreground="#B0BEC5" 
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
 
 </Window>

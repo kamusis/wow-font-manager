@@ -73,6 +73,12 @@
               "target": "Package",
               "version": "[8.2.1, )"
             },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.21, )",
+              "autoReferenced": true
+            },
             "ReactiveUI.Fody": {
               "target": "Package",
               "version": "[19.5.41, )"

@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ReactiveUI;
 
 namespace WowFontManager.ViewModels;
 
-public class ViewModelBase : ObservableObject
+public class ViewModelBase : ReactiveObject
 {
 }

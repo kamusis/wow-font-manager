@@ -87,6 +87,17 @@ public class FontDiscoveryService : IFontDiscoveryService
         return SupportedExtensions.Contains(extension);
     }
 
+    /// <inheritdoc/>
+    public async Task<List<FontFileEntry>> GetFontsInDirectoryAsync(string directoryPath)
+    {
+        var fonts = new List<FontFileEntry>();
+        await foreach (var font in ScanDirectoryAsync(directoryPath, recursive: false))
+        {
+            fonts.Add(font);
+        }
+        return fonts;
+    }
+
     private async Task<FontFileEntry?> CreateFontFileEntryAsync(string filePath)
     {
         try

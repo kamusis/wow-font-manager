@@ -37,4 +37,11 @@ public interface IFontDiscoveryService
     /// <param name="filePath">Path to file</param>
     /// <returns>True if the extension is supported</returns>
     bool IsFontFile(string filePath);
+
+    /// <summary>
+    /// Get all fonts in a directory (non-streaming)
+    /// </summary>
+    /// <param name="directoryPath">Directory to scan</param>
+    /// <returns>List of font entries</returns>
+    Task<List<FontFileEntry>> GetFontsInDirectoryAsync(string directoryPath);
 }

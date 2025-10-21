@@ -1,0 +1,5 @@
+/data/workspace/wow-font-manager/publish/osx-x64/WowFontManager.pdb
+/data/workspace/wow-font-manager/publish/osx-x64/libAvaloniaNative.dylib
+/data/workspace/wow-font-manager/publish/osx-x64/libHarfBuzzSharp.dylib
+/data/workspace/wow-font-manager/publish/osx-x64/libSkiaSharp.dylib
+/data/workspace/wow-font-manager/publish/osx-x64/WowFontManager

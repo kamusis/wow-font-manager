@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "px6X/wN4AMk=",
+  "dgSpecHash": "vfOniu+Jmq8=",
   "success": true,
   "projectFilePath": "/data/workspace/wow-font-manager/src/WowFontManager.csproj",
   "expectedPackageFiles": [
@@ -28,6 +28,7 @@
     "/root/.nuget/packages/harfbuzzsharp.nativeassets.webassembly/8.3.1.1/harfbuzzsharp.nativeassets.webassembly.8.3.1.1.nupkg.sha512",
     "/root/.nuget/packages/harfbuzzsharp.nativeassets.win32/8.3.1.1/harfbuzzsharp.nativeassets.win32.8.3.1.1.nupkg.sha512",
     "/root/.nuget/packages/microcom.runtime/0.11.0/microcom.runtime.0.11.0.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.net.illink.tasks/8.0.21/microsoft.net.illink.tasks.8.0.21.nupkg.sha512",
     "/root/.nuget/packages/reactiveui/19.5.41/reactiveui.19.5.41.nupkg.sha512",
     "/root/.nuget/packages/reactiveui.fody/19.5.41/reactiveui.fody.19.5.41.nupkg.sha512",
     "/root/.nuget/packages/skiasharp/2.88.9/skiasharp.2.88.9.nupkg.sha512",
