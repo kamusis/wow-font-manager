@@ -1,0 +1,120 @@
+{
+  "enUS": {
+    "All": [
+      "FRIZQT__.ttf",
+      "MORPHEUS.ttf",
+      "ARIALN.ttf",
+      "SKURRI.ttf"
+    ],
+    "MainUI": [
+      "FRIZQT__.ttf",
+      "MORPHEUS.ttf"
+    ],
+    "Chat": [
+      "ARIALN.ttf"
+    ],
+    "Damage": [
+      "SKURRI.ttf"
+    ]
+  },
+  "zhCN": {
+    "All": [
+      "ARKai_T.ttf",
+      "FRIZQT__.ttf",
+      "ZYKai_T.ttf",
+      "ARHei.ttf",
+      "ARIALN.ttf",
+      "ZYHei.ttf",
+      "ARKai_C.ttf",
+      "ZYKai_C.ttf"
+    ],
+    "MainUI": [
+      "ARKai_T.ttf",
+      "FRIZQT__.ttf",
+      "ZYKai_T.ttf"
+    ],
+    "Chat": [
+      "ARHei.ttf",
+      "ARIALN.ttf",
+      "ZYHei.ttf"
+    ],
+    "Damage": [
+      "ARKai_C.ttf",
+      "ZYKai_C.ttf"
+    ]
+  },
+  "zhTW": {
+    "All": [
+      "bLEI00D.ttf",
+      "bHEI00M.ttf",
+      "FRIZQT__.ttf",
+      "ARKai_C.ttf",
+      "arheiuhk_bd.ttf",
+      "bHEI01B.ttf",
+      "ARIALN.ttf",
+      "bKAI00M.ttf"
+    ],
+    "MainUI": [
+      "bLEI00D.ttf",
+      "bHEI00M.ttf",
+      "FRIZQT__.ttf",
+      "ARKai_C.ttf"
+    ],
+    "Chat": [
+      "arheiuhk_bd.ttf",
+      "bHEI01B.ttf",
+      "ARIALN.ttf"
+    ],
+    "Damage": [
+      "bKAI00M.ttf"
+    ]
+  },
+  "koKR": {
+    "All": [
+      "FRIZQT__.ttf",
+      "MORPHEUS.ttf",
+      "ARIALN.ttf",
+      "SKURRI.ttf",
+      "2002.ttf",
+      "2002B.ttf",
+      "K_Damage.ttf"
+    ],
+    "MainUI": [
+      "FRIZQT__.ttf",
+      "MORPHEUS.ttf",
+      "2002.ttf"
+    ],
+    "Chat": [
+      "ARIALN.ttf",
+      "2002B.ttf"
+    ],
+    "Damage": [
+      "SKURRI.ttf",
+      "K_Damage.ttf"
+    ]
+  },
+  "ruRU": {
+    "All": [
+      "FRIZQT__.ttf",
+      "FRIZQT___CYR.ttf",
+      "MORPHEUS.ttf",
+      "MORPHEUS_CYR.ttf",
+      "ARIALN.ttf",
+      "SKURRI.ttf",
+      "SKURRI_CYR.ttf"
+    ],
+    "MainUI": [
+      "FRIZQT__.ttf",
+      "FRIZQT___CYR.ttf",
+      "MORPHEUS.ttf",
+      "MORPHEUS_CYR.ttf"
+    ],
+    "Chat": [
+      "ARIALN.ttf"
+    ],
+    "Damage": [
+      "SKURRI.ttf",
+      "SKURRI_CYR.ttf"
+    ]
+  }
+}
