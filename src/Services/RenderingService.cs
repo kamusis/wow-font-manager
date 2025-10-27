@@ -15,9 +15,9 @@ public class RenderingService : IRenderingService
 {
     private static readonly Dictionary<string, string> DefaultSampleTexts = new()
     {
-        { "enUS", "The quick brown fox jumps over the lazy dog.\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789" },
-        { "zhCN", "快速的棕色狐狸跳过懒狗。\n魔兽世界字体管理器\n简体中文测试文本" },
-        { "zhTW", "快速的棕色狐狸跳過懶狗。\n魔獸世界字體管理器\n繁體中文測試文本" },
+        { "enUS", "abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\nThe quick brown fox jumps over the lazy dog.\nWorld of Warcraft Font Manager\nEnglish Test Text" },
+        { "zhCN", "abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n永和九年，岁在癸丑，暮春之初，会于会稽山阴之兰亭\n魔兽世界字体管理器\n简体中文测试文本" },
+        { "zhTW", "abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n永和九年，歲在癸丑，暮春之初，會於會稽山陰之蘭亭\n魔獸世界字體管理器\n繁體中文測試文本" },
         { "koKR", "재빠른 갈색 여우가 게으른 개를 뛰어넘습니다.\n월드 오브 워크래프트\n한국어 테스트 텍스트" },
         { "ruRU", "Быстрая коричневая лиса перепрыгивает через ленивую собаку.\nWorld of Warcraft\nРусский тестовый текст" },
         { "jaJP", "素早い茶色のキツネが怠け者の犬を飛び越えます。\nワールド・オブ・ウォークラフト\n日本語テストテキスト" }
