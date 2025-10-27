@@ -31,13 +31,19 @@ public partial class App : Application
             var renderingService = new RenderingService();
             var fontPreviewService = new FontPreviewService(renderingService);
             var fontCategoryService = new FontCategoryService();
+            var wowClientService = new WoWClientService();
+            var fontReplacementService = new FontReplacementService(wowClientService);
+            var wowConfigurationService = new WoWConfigurationService(wowClientService);
 
             // Create ViewModels
             var fontBrowserViewModel = new FontBrowserViewModel(
                 fontDiscoveryService,
                 fontMetadataService,
                 fontPreviewService,
-                fontCategoryService);
+                fontCategoryService,
+                fontReplacementService,
+                wowClientService,
+                wowConfigurationService);
 
             // Create and configure MainWindow
             var mainWindow = new MainWindow();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,9 @@ public partial class FontBrowserViewModel : ViewModelBase
     private readonly IFontMetadataService _fontMetadataService;
     private readonly IFontPreviewService _fontPreviewService;
     private readonly IFontCategoryService _fontCategoryService;
+    private readonly IFontReplacementService _fontReplacementService;
+    private readonly IWoWClientService _wowClientService;
+    private readonly WoWConfigurationService _wowConfigurationService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -44,12 +48,18 @@ public partial class FontBrowserViewModel : ViewModelBase
         IFontDiscoveryService fontDiscoveryService,
         IFontMetadataService fontMetadataService,
         IFontPreviewService fontPreviewService,
-        IFontCategoryService fontCategoryService)
+        IFontCategoryService fontCategoryService,
+        IFontReplacementService fontReplacementService,
+        IWoWClientService wowClientService,
+        WoWConfigurationService wowConfigurationService)
     {
         _fontDiscoveryService = fontDiscoveryService;
         _fontMetadataService = fontMetadataService;
         _fontPreviewService = fontPreviewService;
         _fontCategoryService = fontCategoryService;
+        _fontReplacementService = fontReplacementService;
+        _wowClientService = wowClientService;
+        _wowConfigurationService = wowConfigurationService;
     }
 
     /// <summary>
@@ -154,21 +164,123 @@ public partial class FontBrowserViewModel : ViewModelBase
     /// Applies the selected font to the specified WoW font category
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanApplyFont))]
-    private void ApplyFont(FontCategory category)
+    private async Task ApplyFontAsync(FontCategory category)
     {
-        // Placeholder implementation - to be completed in future change
-        // This will eventually:
-        // 1. Get the list of WoW font files for the category
-        // 2. Copy the selected font to replace those files
-        // 3. Create backups before replacement
-        // 4. Update status message
-        
         if (_selectedFont == null)
         {
             return;
         }
 
-        StatusMessage = $"Font replacement for {category} category will be implemented in a future update";
+        try
+        {
+            StatusMessage = "Preparing font replacement...";
+
+            // Validate WoW installation
+            var validation = _wowConfigurationService.ValidateInstallation();
+            if (!validation.IsValid)
+            {
+                StatusMessage = $"Error: {string.Join("; ", validation.Errors)}";
+                return;
+            }
+
+            // Detect locale
+            var localeResult = await _wowConfigurationService.DetectLocaleAsync();
+            if (!localeResult.Success && localeResult.Warning != null)
+            {
+                StatusMessage = $"Warning: {localeResult.Warning}";
+                await Task.Delay(2000); // Show warning briefly
+            }
+
+            // Get client configuration
+            var clientConfig = await _wowConfigurationService.GetClientConfigurationAsync();
+
+            // Map FontCategory to ReplacementCategory
+            var replacementCategory = category switch
+            {
+                FontCategory.All => ReplacementCategory.All,
+                FontCategory.MainUI => ReplacementCategory.MainUI,
+                FontCategory.Chat => ReplacementCategory.Chat,
+                FontCategory.Damage => ReplacementCategory.Damage,
+                _ => ReplacementCategory.All
+            };
+
+            // Get target font files based on category
+            var targetFiles = _wowClientService.GetFontMappingForLocale(
+                localeResult.Locale,
+                replacementCategory);
+
+            if (targetFiles == null || targetFiles.Count == 0)
+            {
+                StatusMessage = $"Error: No font mappings found for locale {localeResult.Locale}";
+                return;
+            }
+
+            // Create operation
+            var operation = new FontReplacementOperation
+            {
+                SourceFontPath = _selectedFont.FilePath,
+                TargetClient = clientConfig,
+                Categories = new List<ReplacementCategory> { replacementCategory },
+                TargetFiles = targetFiles
+            };
+
+            // Show confirmation dialog
+            var confirmationViewModel = new FontReplacementConfirmationViewModel();
+            confirmationViewModel.Initialize(operation, AppDomain.CurrentDomain.BaseDirectory);
+
+            var dialog = new Views.FontReplacementConfirmationDialog
+            {
+                DataContext = confirmationViewModel
+            };
+
+            var mainWindow = GetMainWindow();
+            if (mainWindow == null)
+            {
+                StatusMessage = "Error: Could not find main window";
+                return;
+            }
+
+            var result = await dialog.ShowDialog<bool?>(mainWindow);
+
+            if (result != true || !confirmationViewModel.IsConfirmed)
+            {
+                StatusMessage = "Font replacement cancelled";
+                return;
+            }
+
+            // Execute replacement
+            StatusMessage = "Replacing fonts...";
+            var replacementResult = await _fontReplacementService.ReplaceFontAsync(
+                operation,
+                new Progress<int>(percent => StatusMessage = $"Replacing fonts... {percent}%"));
+
+            if (replacementResult.Success)
+            {
+                StatusMessage = $"Successfully replaced {replacementResult.ReplacedFiles.Count} fonts. Backup created at: {replacementResult.BackupInfo?.BackupDirectory}";
+            }
+            else if (replacementResult.FailedFiles.Count > 0 && replacementResult.ReplacedFiles.Count > 0)
+            {
+                StatusMessage = $"Replaced {replacementResult.ReplacedFiles.Count} of {replacementResult.ReplacedFiles.Count + replacementResult.FailedFiles.Count} fonts. Failed: {string.Join(", ", replacementResult.FailedFiles)}. Backup at: {replacementResult.BackupInfo?.BackupDirectory}";
+            }
+            else
+            {
+                StatusMessage = $"Font replacement failed: {replacementResult.ErrorMessage}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Gets the main window for dialog parent
+    /// </summary>
+    private Avalonia.Controls.Window? GetMainWindow()
+    {
+        return Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
     }
 
     /// <summary>

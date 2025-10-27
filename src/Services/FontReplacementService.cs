@@ -194,58 +194,89 @@ public class FontReplacementService : IFontReplacementService
     public async Task<List<BackupInfo>> ListBackupsAsync(WoWClientConfiguration client)
     {
         var backups = new List<BackupInfo>();
-        var backupBaseDir = GetBackupBaseDirectory(client);
-
-        if (!Directory.Exists(backupBaseDir))
-            return backups;
-
-        var backupDirs = Directory.GetDirectories(backupBaseDir)
-            .Where(d => Path.GetFileName(d).StartsWith("FontBackup_"))
-            .OrderByDescending(d => Directory.GetCreationTime(d));
-
-        foreach (var backupDir in backupDirs)
+        
+        // Check for backups in WoW installation directory (new location)
+        var wowInstallPath = client.InstallationPath;
+        if (Directory.Exists(wowInstallPath))
         {
-            var metadataPath = Path.Combine(backupDir, "backup.json");
-            if (File.Exists(metadataPath))
+            var wowBackupDirs = Directory.GetDirectories(wowInstallPath)
+                .Where(d => Path.GetFileName(d).StartsWith("Fonts."))
+                .OrderByDescending(d => Directory.GetCreationTime(d));
+
+            foreach (var backupDir in wowBackupDirs)
             {
-                try
+                var metadataPath = Path.Combine(backupDir, "backup.json");
+                if (File.Exists(metadataPath))
                 {
-                    var json = await File.ReadAllTextAsync(metadataPath);
-                    var backupInfo = JsonSerializer.Deserialize<BackupInfo>(json);
-                    if (backupInfo != null)
+                    try
                     {
-                        backups.Add(backupInfo);
+                        var json = await File.ReadAllTextAsync(metadataPath);
+                        var backupInfo = JsonSerializer.Deserialize<BackupInfo>(json);
+                        if (backupInfo != null)
+                        {
+                            backups.Add(backupInfo);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore corrupted backup metadata
                     }
                 }
-                catch
+                else
                 {
-                    // Ignore corrupted backup metadata
+                    // Try to create BackupInfo from directory
+                    try
+                    {
+                        var dirInfo = new DirectoryInfo(backupDir);
+                        var backupFiles = dirInfo.GetFiles("*.ttf").Concat(dirInfo.GetFiles("*.otf")).ToList();
+                        if (backupFiles.Count > 0)
+                        {
+                            backups.Add(new BackupInfo
+                            {
+                                BackupDirectory = backupDir,
+                                BackupDate = dirInfo.CreationTime,
+                                SourceFont = "Unknown",
+                                ReplacedFiles = backupFiles.Select(f => f.Name).ToList(),
+                                ClientType = client.ClientType,
+                                Locale = client.Locale,
+                                Categories = new List<ReplacementCategory> { ReplacementCategory.All }
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore errors
+                    }
                 }
             }
-            else
+        }
+        
+        // Also check old backup location (AppData) for backward compatibility
+        var backupBaseDir = GetBackupBaseDirectory(client);
+        if (Directory.Exists(backupBaseDir))
+        {
+            var backupDirs = Directory.GetDirectories(backupBaseDir)
+                .Where(d => Path.GetFileName(d).StartsWith("FontBackup_"))
+                .OrderByDescending(d => Directory.GetCreationTime(d));
+
+            foreach (var backupDir in backupDirs)
             {
-                // Try to create BackupInfo from directory
-                try
+                var metadataPath = Path.Combine(backupDir, "backup.json");
+                if (File.Exists(metadataPath))
                 {
-                    var dirInfo = new DirectoryInfo(backupDir);
-                    var backupFiles = dirInfo.GetFiles("*.ttf").Concat(dirInfo.GetFiles("*.otf")).ToList();
-                    if (backupFiles.Count > 0)
+                    try
                     {
-                        backups.Add(new BackupInfo
+                        var json = await File.ReadAllTextAsync(metadataPath);
+                        var backupInfo = JsonSerializer.Deserialize<BackupInfo>(json);
+                        if (backupInfo != null)
                         {
-                            BackupDirectory = backupDir,
-                            BackupDate = dirInfo.CreationTime,
-                            SourceFont = "Unknown",
-                            ReplacedFiles = backupFiles.Select(f => f.Name).ToList(),
-                            ClientType = client.ClientType,
-                            Locale = client.Locale,
-                            Categories = new List<ReplacementCategory> { ReplacementCategory.All }
-                        });
+                            backups.Add(backupInfo);
+                        }
                     }
-                }
-                catch
-                {
-                    // Ignore errors
+                    catch
+                    {
+                        // Ignore corrupted backup metadata
+                    }
                 }
             }
         }
@@ -322,13 +353,50 @@ public class FontReplacementService : IFontReplacementService
     }
 
     /// <summary>
-    /// Creates a backup of current fonts
+    /// Creates a backup of current fonts by renaming the Fonts folder
     /// </summary>
     private async Task<BackupInfo> CreateBackupAsync(WoWClientConfiguration client)
     {
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        var backupDir = Path.Combine(GetBackupBaseDirectory(client), $"FontBackup_{timestamp}");
-        Directory.CreateDirectory(backupDir);
+        var fontsPath = client.FontsPath;
+        
+        // If Fonts folder doesn't exist, no backup needed
+        if (!Directory.Exists(fontsPath))
+        {
+            // Create new Fonts folder
+            Directory.CreateDirectory(fontsPath);
+            
+            return new BackupInfo
+            {
+                BackupDirectory = string.Empty,
+                BackupDate = DateTime.Now,
+                ClientType = client.ClientType,
+                Locale = client.Locale,
+                SourceFont = string.Empty,
+                ReplacedFiles = new List<string>(),
+                Categories = new List<ReplacementCategory>()
+            };
+        }
+
+        // Determine backup folder name in WoW installation directory
+        var wowInstallPath = client.InstallationPath;
+        var backupFolderName = $"Fonts.{timestamp}";
+        var backupDir = Path.Combine(wowInstallPath, backupFolderName);
+        
+        // Handle collision (unlikely but possible)
+        var counter = 2;
+        while (Directory.Exists(backupDir))
+        {
+            backupFolderName = $"Fonts.{timestamp}_{counter}";
+            backupDir = Path.Combine(wowInstallPath, backupFolderName);
+            counter++;
+        }
+
+        // Rename Fonts folder to backup name
+        await Task.Run(() => Directory.Move(fontsPath, backupDir));
+        
+        // Create new empty Fonts folder
+        Directory.CreateDirectory(fontsPath);
 
         var backupInfo = new BackupInfo
         {
@@ -340,18 +408,6 @@ public class FontReplacementService : IFontReplacementService
             ReplacedFiles = new List<string>(),
             Categories = new List<ReplacementCategory>()
         };
-
-        // Copy all existing font files
-        var fontFiles = Directory.GetFiles(client.FontsPath, "*.ttf")
-            .Concat(Directory.GetFiles(client.FontsPath, "*.otf"))
-            .Concat(Directory.GetFiles(client.FontsPath, "*.ttc"));
-
-        foreach (var fontFile in fontFiles)
-        {
-            var fileName = Path.GetFileName(fontFile);
-            var destPath = Path.Combine(backupDir, fileName);
-            await Task.Run(() => File.Copy(fontFile, destPath, overwrite: false));
-        }
 
         return backupInfo;
     }
