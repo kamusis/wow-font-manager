@@ -4,6 +4,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
+using WowFontManager.Services;
 using WowFontManager.ViewModels;
 using WowFontManager.Views;
 
@@ -23,10 +24,27 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(),
-            };
+
+            // Initialize services (prepare for DI container in future)
+            var fontDiscoveryService = new FontDiscoveryService();
+            var fontMetadataService = new FontMetadataService();
+            var renderingService = new RenderingService();
+            var fontPreviewService = new FontPreviewService(renderingService);
+
+            // Create ViewModels
+            var fontBrowserViewModel = new FontBrowserViewModel(
+                fontDiscoveryService,
+                fontMetadataService,
+                fontPreviewService);
+
+            // Create and configure MainWindow
+            var mainWindow = new MainWindow();
+            mainWindow.FontBrowserView.DataContext = fontBrowserViewModel;
+            
+            desktop.MainWindow = mainWindow;
+
+            // Auto-load fonts on startup
+            _ = fontBrowserViewModel.LoadFontsCommand.ExecuteAsync(null);
         }
 
         base.OnFrameworkInitializationCompleted();

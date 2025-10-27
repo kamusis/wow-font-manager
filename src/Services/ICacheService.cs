@@ -16,7 +16,7 @@ public interface ICacheService : IDisposable
     /// <param name="filePath">Font file path</param>
     /// <param name="factory">Factory function to create typeface if not cached</param>
     /// <returns>Cached or newly created typeface</returns>
-    SKTypeface GetOrAddTypeface(string filePath, Func<SKTypeface> factory);
+    SKTypeface? GetOrAddTypeface(string filePath, Func<SKTypeface?> factory);
 
     /// <summary>
     /// Gets or adds a thumbnail bitmap to the cache

@@ -160,7 +160,7 @@ public class FontReplacementService : IFontReplacementService
 
                 try
                 {
-                    File.Copy(backupFile, targetPath, overwrite: true);
+                    await Task.Run(() => File.Copy(backupFile, targetPath, overwrite: true), cancellationToken);
                     result.RestoredFiles.Add(fileName);
                 }
                 catch (Exception ex)
@@ -350,7 +350,7 @@ public class FontReplacementService : IFontReplacementService
         {
             var fileName = Path.GetFileName(fontFile);
             var destPath = Path.Combine(backupDir, fileName);
-            File.Copy(fontFile, destPath, overwrite: false);
+            await Task.Run(() => File.Copy(fontFile, destPath, overwrite: false));
         }
 
         return backupInfo;

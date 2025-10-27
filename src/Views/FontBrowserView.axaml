@@ -1,0 +1,128 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:WowFontManager.ViewModels"
+             xmlns:models="using:WowFontManager.Models"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+             x:Class="WowFontManager.Views.FontBrowserView"
+             x:DataType="vm:FontBrowserViewModel">
+
+    <Design.DataContext>
+        <vm:FontBrowserViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="#E8E8E8" Padding="10" BorderBrush="#CCCCCC" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="Load Fonts" Command="{Binding LoadFontsCommand}" />
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#1A1A1A" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="100" Height="20" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Two-panel layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+            <!-- Left Panel: Font List -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#DDDDDD" BorderThickness="0,0,1,0" Padding="5">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Font Folders" 
+                               FontWeight="Bold" 
+                               FontSize="14" 
+                               Margin="5,5,5,10"
+                               Foreground="#1A1A1A" />
+                    
+                    <TreeView ItemsSource="{Binding FontTree}"
+                              SelectedItem="{Binding SelectedItem}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <TreeView.Styles>
+                            <!-- All text always uses dark color for good contrast -->
+                            <Style Selector="TreeViewItem TextBlock">
+                                <Setter Property="Foreground" Value="#1A1A1A" />
+                            </Style>
+                            <!-- Selected item uses light background to maintain contrast with dark text -->
+                            <Style Selector="TreeViewItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#E3F2FD" />
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:FontTreeNode">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <!-- Folder icon for folder nodes -->
+                                    <TextBlock Text="📁" 
+                                               FontSize="14"
+                                               IsVisible="{Binding NodeType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:FontTreeNodeType.Folder}}" />
+                                    <!-- Font icon for font nodes -->
+                                    <TextBlock Text="🔤" 
+                                               FontSize="14"
+                                               IsVisible="{Binding NodeType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:FontTreeNodeType.Font}}" />
+                                    <!-- Display text -->
+                                    <TextBlock Text="{Binding DisplayText}" 
+                                               FontWeight="{Binding NodeType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:FontTreeNodeType.Folder}}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </DockPanel>
+            </Border>
+
+            <!-- Right Panel: Font Preview -->
+            <Border Grid.Column="1" Background="#F0F0F0" Padding="20">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Font Preview" 
+                               FontWeight="Bold" 
+                               FontSize="14" 
+                               Margin="0,0,0,15"
+                               Foreground="#1A1A1A" />
+                    
+                    <!-- Preview Image -->
+                    <Border Background="White" 
+                            BorderBrush="#DDDDDD" 
+                            BorderThickness="1" 
+                            CornerRadius="4"
+                            Padding="10">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                                      VerticalScrollBarVisibility="Auto">
+                            <Panel>
+                                <!-- Preview Image -->
+                                <Image Source="{Binding PreviewImage}" 
+                                       Stretch="None"
+                                       IsVisible="{Binding PreviewImage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                
+                                <!-- Placeholder when no font selected -->
+                                <TextBlock Text="Select a font from the list to preview" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Foreground="#4A4A4A"
+                                           IsVisible="{Binding PreviewImage, Converter={x:Static ObjectConverters.IsNull}}" />
+                            </Panel>
+                        </ScrollViewer>
+                    </Border>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#E8E8E8" Padding="10" BorderBrush="#CCCCCC" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" 
+                           Text="{Binding StatusMessage}" 
+                           VerticalAlignment="Center" 
+                           FontSize="12"
+                           Foreground="#1A1A1A" />
+                <TextBlock Grid.Column="1" 
+                           VerticalAlignment="Center" 
+                           FontSize="12"
+                           Foreground="#1A1A1A">
+                    <Run Text="Folders: " />
+                    <Run Text="{Binding FontTree.Count}" FontWeight="Bold" />
+                </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

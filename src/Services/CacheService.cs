@@ -44,7 +44,7 @@ public class CacheService : ICacheService
     }
 
     /// <inheritdoc/>
-    public SKTypeface GetOrAddTypeface(string filePath, Func<SKTypeface> factory)
+    public SKTypeface? GetOrAddTypeface(string filePath, Func<SKTypeface?> factory)
     {
         var cacheKey = GenerateCacheKey(filePath);
         
