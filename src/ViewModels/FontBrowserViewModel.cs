@@ -20,6 +20,7 @@ public partial class FontBrowserViewModel : ViewModelBase
     private readonly IFontDiscoveryService _fontDiscoveryService;
     private readonly IFontMetadataService _fontMetadataService;
     private readonly IFontPreviewService _fontPreviewService;
+    private readonly IFontCategoryService _fontCategoryService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -42,11 +43,13 @@ public partial class FontBrowserViewModel : ViewModelBase
     public FontBrowserViewModel(
         IFontDiscoveryService fontDiscoveryService,
         IFontMetadataService fontMetadataService,
-        IFontPreviewService fontPreviewService)
+        IFontPreviewService fontPreviewService,
+        IFontCategoryService fontCategoryService)
     {
         _fontDiscoveryService = fontDiscoveryService;
         _fontMetadataService = fontMetadataService;
         _fontPreviewService = fontPreviewService;
+        _fontCategoryService = fontCategoryService;
     }
 
     /// <summary>
@@ -142,6 +145,38 @@ public partial class FontBrowserViewModel : ViewModelBase
             _selectedFont = null;
             PreviewImage = null;
         }
+        
+        // Update command can-execute state
+        ApplyFontCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// Applies the selected font to the specified WoW font category
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanApplyFont))]
+    private void ApplyFont(FontCategory category)
+    {
+        // Placeholder implementation - to be completed in future change
+        // This will eventually:
+        // 1. Get the list of WoW font files for the category
+        // 2. Copy the selected font to replace those files
+        // 3. Create backups before replacement
+        // 4. Update status message
+        
+        if (_selectedFont == null)
+        {
+            return;
+        }
+
+        StatusMessage = $"Font replacement for {category} category will be implemented in a future update";
+    }
+
+    /// <summary>
+    /// Determines if a font can be applied (requires a font to be selected)
+    /// </summary>
+    private bool CanApplyFont()
+    {
+        return _selectedFont != null;
     }
 
     /// <summary>

@@ -30,12 +30,14 @@ public partial class App : Application
             var fontMetadataService = new FontMetadataService();
             var renderingService = new RenderingService();
             var fontPreviewService = new FontPreviewService(renderingService);
+            var fontCategoryService = new FontCategoryService();
 
             // Create ViewModels
             var fontBrowserViewModel = new FontBrowserViewModel(
                 fontDiscoveryService,
                 fontMetadataService,
-                fontPreviewService);
+                fontPreviewService,
+                fontCategoryService);
 
             // Create and configure MainWindow
             var mainWindow = new MainWindow();

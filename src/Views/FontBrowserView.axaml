@@ -22,8 +22,8 @@
             </StackPanel>
         </Border>
 
-        <!-- Two-panel layout -->
-        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+        <!-- Three-panel layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*,200">
             <!-- Left Panel: Font List -->
             <Border Grid.Column="0" Background="White" BorderBrush="#DDDDDD" BorderThickness="0,0,1,0" Padding="5">
                 <DockPanel>
@@ -69,7 +69,7 @@
                 </DockPanel>
             </Border>
 
-            <!-- Right Panel: Font Preview -->
+            <!-- Center Panel: Font Preview -->
             <Border Grid.Column="1" Background="#F0F0F0" Padding="20">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" 
@@ -103,6 +103,121 @@
                             </Panel>
                         </ScrollViewer>
                     </Border>
+                </DockPanel>
+            </Border>
+
+            <!-- Right Panel: Apply Font Actions -->
+            <Border Grid.Column="2" Background="#F5F5F5" BorderBrush="#DDDDDD" BorderThickness="1,0,0,0" Padding="15">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Apply Font" 
+                               FontWeight="Bold" 
+                               FontSize="14" 
+                               Margin="0,0,0,15"
+                               Foreground="#1A1A1A" />
+                    
+                    <!-- Action Buttons -->
+                    <StackPanel Spacing="10">
+                        <!-- All UI Fonts Button -->
+                        <Button Content="All UI Fonts"
+                                Command="{Binding ApplyFontCommand}"
+                                CommandParameter="{x:Static models:FontCategory.All}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="10,8"
+                                ToolTip.Tip="Apply this font to all WoW UI font files">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                    <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Style>
+                                <Style Selector="Button:disabled">
+                                    <Setter Property="Background" Value="#E8E8E8" />
+                                    <Setter Property="Foreground" Value="#999999" />
+                                </Style>
+                                <Style Selector="Button:pointerover:not(:disabled)">
+                                    <Setter Property="Background" Value="#E3F2FD" />
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+
+                        <!-- Main UI Only Button -->
+                        <Button Content="Main UI Only"
+                                Command="{Binding ApplyFontCommand}"
+                                CommandParameter="{x:Static models:FontCategory.MainUI}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="10,8"
+                                ToolTip.Tip="Apply this font to Main UI fonts (menus, tooltips, general UI)">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                    <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Style>
+                                <Style Selector="Button:disabled">
+                                    <Setter Property="Background" Value="#E8E8E8" />
+                                    <Setter Property="Foreground" Value="#999999" />
+                                </Style>
+                                <Style Selector="Button:pointerover:not(:disabled)">
+                                    <Setter Property="Background" Value="#E3F2FD" />
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+
+                        <!-- Chat Only Button -->
+                        <Button Content="Chat Only"
+                                Command="{Binding ApplyFontCommand}"
+                                CommandParameter="{x:Static models:FontCategory.Chat}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="10,8"
+                                ToolTip.Tip="Apply this font to Chat window fonts">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                    <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Style>
+                                <Style Selector="Button:disabled">
+                                    <Setter Property="Background" Value="#E8E8E8" />
+                                    <Setter Property="Foreground" Value="#999999" />
+                                </Style>
+                                <Style Selector="Button:pointerover:not(:disabled)">
+                                    <Setter Property="Background" Value="#E3F2FD" />
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+
+                        <!-- Damage Numbers Only Button -->
+                        <Button Content="Damage Numbers Only"
+                                Command="{Binding ApplyFontCommand}"
+                                CommandParameter="{x:Static models:FontCategory.Damage}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="10,8"
+                                ToolTip.Tip="Apply this font to Damage number fonts (floating combat text)">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                    <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Style>
+                                <Style Selector="Button:disabled">
+                                    <Setter Property="Background" Value="#E8E8E8" />
+                                    <Setter Property="Foreground" Value="#999999" />
+                                </Style>
+                                <Style Selector="Button:pointerover:not(:disabled)">
+                                    <Setter Property="Background" Value="#E3F2FD" />
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+                    </StackPanel>
                 </DockPanel>
             </Border>
         </Grid>
