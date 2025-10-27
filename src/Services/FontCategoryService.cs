@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using WowFontManager.Models;
 
@@ -97,14 +98,17 @@ public class FontCategoryService : IFontCategoryService
     {
         try
         {
-            var resourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "FontMappings.json");
-            
-            if (!File.Exists(resourcePath))
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "WowFontManager.Resources.FontMappings.json";
+
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
             {
                 return new Dictionary<string, LocaleFontMappings>();
             }
 
-            var json = File.ReadAllText(resourcePath);
+            using var reader = new StreamReader(stream);
+            var json = reader.ReadToEnd();
             var mappings = JsonSerializer.Deserialize<Dictionary<string, LocaleFontMappings>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
