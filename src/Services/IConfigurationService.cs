@@ -11,7 +11,7 @@ public interface IConfigurationService
     /// <summary>
     /// Loads application settings from storage
     /// </summary>
-    Task<AppSettings> LoadSettingsAsync();
+    AppSettings LoadSettings();
 
     /// <summary>
     /// Saves application settings to storage

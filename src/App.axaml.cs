@@ -1,8 +1,9 @@
+using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
-using System.Linq;
 using Avalonia.Markup.Xaml;
 using WowFontManager.Services;
 using WowFontManager.ViewModels;
@@ -25,6 +26,21 @@ public partial class App : Application
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
 
+            // Load configuration service and settings synchronously
+            var configurationService = new ConfigurationService();
+            AppSettings? settings = null;
+            
+            try
+            {
+                // Load settings synchronously from file
+                settings = configurationService.LoadSettings();
+            }
+            catch (Exception ex)
+            {
+                // Log error but continue with defaults
+                System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
+            }
+
             // Initialize services (prepare for DI container in future)
             var fontDiscoveryService = new FontDiscoveryService();
             var fontMetadataService = new FontMetadataService();
@@ -33,7 +49,9 @@ public partial class App : Application
             var fontCategoryService = new FontCategoryService();
             var wowClientService = new WoWClientService();
             var fontReplacementService = new FontReplacementService(wowClientService);
-            var wowConfigurationService = new WoWConfigurationService(wowClientService);
+            var wowConfigurationService = new WoWConfigurationService(
+                wowClientService, 
+                settings?.LastWoWClientPath); // Pass saved path if available
 
             // Create ViewModels
             var fontBrowserViewModel = new FontBrowserViewModel(
@@ -43,7 +61,8 @@ public partial class App : Application
                 fontCategoryService,
                 fontReplacementService,
                 wowClientService,
-                wowConfigurationService);
+                wowConfigurationService,
+                configurationService); // Pass ConfigurationService to ViewModel
 
             // Create and configure MainWindow
             var mainWindow = new MainWindow();
@@ -51,7 +70,7 @@ public partial class App : Application
             
             desktop.MainWindow = mainWindow;
 
-            // Auto-load fonts on startup
+            // Auto-load fonts on startup (fire and forget)
             _ = fontBrowserViewModel.LoadFontsCommand.ExecuteAsync(null);
         }
 

@@ -34,13 +34,13 @@ public class ConfigurationService : IConfigurationService
     }
 
     /// <inheritdoc/>
-    public async Task<AppSettings> LoadSettingsAsync()
+    public AppSettings LoadSettings()
     {
         try
         {
             if (File.Exists(_settingsPath))
             {
-                var json = await File.ReadAllTextAsync(_settingsPath);
+                var json = File.ReadAllText(_settingsPath);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
                 if (settings != null)
                 {

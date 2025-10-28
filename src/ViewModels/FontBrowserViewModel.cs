@@ -25,6 +25,7 @@ public partial class FontBrowserViewModel : ViewModelBase
     private readonly IFontReplacementService _fontReplacementService;
     private readonly IWoWClientService _wowClientService;
     private readonly WoWConfigurationService _wowConfigurationService;
+    private readonly IConfigurationService _configurationService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -54,7 +55,8 @@ public partial class FontBrowserViewModel : ViewModelBase
         IFontCategoryService fontCategoryService,
         IFontReplacementService fontReplacementService,
         IWoWClientService wowClientService,
-        WoWConfigurationService wowConfigurationService)
+        WoWConfigurationService wowConfigurationService,
+        IConfigurationService configurationService)
     {
         _fontDiscoveryService = fontDiscoveryService;
         _fontMetadataService = fontMetadataService;
@@ -63,6 +65,7 @@ public partial class FontBrowserViewModel : ViewModelBase
         _fontReplacementService = fontReplacementService;
         _wowClientService = wowClientService;
         _wowConfigurationService = wowConfigurationService;
+        _configurationService = configurationService;
         
         // Initialize WoW installation path
         WowInstallPath = _wowConfigurationService.GetWoWInstallationPath();
@@ -394,6 +397,9 @@ public partial class FontBrowserViewModel : ViewModelBase
                     
                     // Update the UI display
                     WowInstallPath = selectedPath;
+                    
+                    // Save to persistent storage
+                    await _configurationService.UpdateSettingAsync("LastWoWClientPath", selectedPath);
                     
                     StatusMessage = $"WoW installation path updated: {selectedPath}";
                 }

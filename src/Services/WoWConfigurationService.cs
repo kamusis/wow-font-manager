@@ -19,10 +19,10 @@ public class WoWConfigurationService
     private readonly IWoWClientService _woWClientService;
     private string _currentInstallPath;
 
-    public WoWConfigurationService(IWoWClientService woWClientService)
+    public WoWConfigurationService(IWoWClientService woWClientService, string? initialPath = null)
     {
         _woWClientService = woWClientService;
-        _currentInstallPath = DefaultWoWInstallPath;
+        _currentInstallPath = initialPath ?? DefaultWoWInstallPath;
     }
 
     /// <summary>
