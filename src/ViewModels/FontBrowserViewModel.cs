@@ -44,6 +44,9 @@ public partial class FontBrowserViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusMessage = "No fonts loaded";
 
+    [ObservableProperty]
+    private string _wowInstallPath = string.Empty;
+
     public FontBrowserViewModel(
         IFontDiscoveryService fontDiscoveryService,
         IFontMetadataService fontMetadataService,
@@ -60,6 +63,9 @@ public partial class FontBrowserViewModel : ViewModelBase
         _fontReplacementService = fontReplacementService;
         _wowClientService = wowClientService;
         _wowConfigurationService = wowConfigurationService;
+        
+        // Initialize WoW installation path
+        WowInstallPath = _wowConfigurationService.GetWoWInstallationPath();
     }
 
     /// <summary>
@@ -351,5 +357,68 @@ public partial class FontBrowserViewModel : ViewModelBase
             PreviewImage = null;
             StatusMessage = $"Error rendering preview: {ex.Message}";
         }
+    }
+
+    /// <summary>
+    /// Opens a folder picker dialog to select WoW installation path
+    /// </summary>
+    [RelayCommand]
+    private async Task SelectWoWInstallPathAsync()
+    {
+        try
+        {
+            var mainWindow = GetMainWindow();
+            if (mainWindow == null)
+            {
+                StatusMessage = "Error: Could not find main window";
+                return;
+            }
+
+            // Open folder picker dialog
+            var folderPicker = await mainWindow.StorageProvider.OpenFolderPickerAsync(
+                new Avalonia.Platform.Storage.FolderPickerOpenOptions
+                {
+                    Title = "Select WoW Installation Directory",
+                    AllowMultiple = false
+                });
+
+            if (folderPicker.Count > 0)
+            {
+                var selectedPath = folderPicker[0].Path.LocalPath;
+                
+                // Validate the selected path
+                if (ValidateWoWInstallPath(selectedPath))
+                {
+                    // Update the configuration service with the new path
+                    _wowConfigurationService.SetWoWInstallationPath(selectedPath);
+                    
+                    // Update the UI display
+                    WowInstallPath = selectedPath;
+                    
+                    StatusMessage = $"WoW installation path updated: {selectedPath}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error selecting path: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Validates that the selected path ends with a valid WoW client directory name
+    /// </summary>
+    private bool ValidateWoWInstallPath(string path)
+    {
+        var validClientDirs = new[] { "_retail_", "_classic_", "_classic_era_", "_ptr_", "_xptr_", "_beta_" };
+        var dirName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        
+        if (!validClientDirs.Contains(dirName, StringComparer.OrdinalIgnoreCase))
+        {
+            StatusMessage = $"Warning: Selected directory '{dirName}' does not appear to be a valid WoW client directory. Expected one of: {string.Join(", ", validClientDirs)}";
+            return false;
+        }
+
+        return true;
     }
 }

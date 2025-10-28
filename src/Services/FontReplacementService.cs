@@ -325,17 +325,26 @@ public class FontReplacementService : IFontReplacementService
             result.Errors.Add("Source font file does not exist");
         }
 
-        // Check if WoW client path is valid
-        if (!Directory.Exists(operation.TargetClient.FontsPath))
+        // Check if WoW installation path is valid
+        if (!Directory.Exists(operation.TargetClient.InstallationPath))
         {
             result.IsValid = false;
-            result.Errors.Add("WoW client fonts directory does not exist");
+            result.Errors.Add("WoW installation directory does not exist");
         }
 
-        // Check write permissions
+        // Check write permissions to WoW installation directory
+        // Note: Fonts directory may not exist yet and will be created automatically
         try
         {
-            var testFile = Path.Combine(operation.TargetClient.FontsPath, $".test_{Guid.NewGuid()}");
+            var testDir = operation.TargetClient.FontsPath;
+            
+            // If Fonts directory doesn't exist, test write permission on parent directory
+            if (!Directory.Exists(testDir))
+            {
+                testDir = operation.TargetClient.InstallationPath;
+            }
+            
+            var testFile = Path.Combine(testDir, $".test_{Guid.NewGuid()}");
             await File.WriteAllTextAsync(testFile, "test");
             File.Delete(testFile);
         }

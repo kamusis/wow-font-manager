@@ -8,35 +8,49 @@ using WowFontManager.Models;
 namespace WowFontManager.Services;
 
 /// <summary>
-/// Service for managing WoW configuration and fixed installation path
+/// Service for managing WoW configuration and installation path
 /// </summary>
 public class WoWConfigurationService
 {
-    // Fixed WoW installation path for this version
-    private const string FixedWoWInstallPath = @"d:\Games\World of Warcraft\_retail_\";
+    // Default WoW installation path
+    private const string DefaultWoWInstallPath = @"d:\Games\World of Warcraft\_retail_\";
     private const string DefaultLocale = "enUS";
     
     private readonly IWoWClientService _woWClientService;
+    private string _currentInstallPath;
 
     public WoWConfigurationService(IWoWClientService woWClientService)
     {
         _woWClientService = woWClientService;
+        _currentInstallPath = DefaultWoWInstallPath;
     }
 
     /// <summary>
-    /// Gets the fixed WoW installation path
+    /// Gets the current WoW installation path
     /// </summary>
-    public string GetWoWInstallationPath() => FixedWoWInstallPath;
+    public string GetWoWInstallationPath() => _currentInstallPath;
+
+    /// <summary>
+    /// Sets the WoW installation path
+    /// </summary>
+    /// <param name="path">The new installation path</param>
+    public void SetWoWInstallationPath(string path)
+    {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            _currentInstallPath = path;
+        }
+    }
 
     /// <summary>
     /// Gets the Fonts folder path derived from WoW installation path
     /// </summary>
-    public string GetFontsPath() => Path.Combine(FixedWoWInstallPath, "Fonts");
+    public string GetFontsPath() => Path.Combine(_currentInstallPath, "Fonts");
 
     /// <summary>
     /// Gets the Config.wtf path derived from WoW installation path
     /// </summary>
-    public string GetConfigPath() => Path.Combine(FixedWoWInstallPath, "WTF", "Config.wtf");
+    public string GetConfigPath() => Path.Combine(_currentInstallPath, "WTF", "Config.wtf");
 
     /// <summary>
     /// Detects the locale from Config.wtf file
@@ -118,7 +132,7 @@ public class WoWConfigurationService
     }
 
     /// <summary>
-    /// Validates that the fixed WoW installation exists
+    /// Validates that the WoW installation exists
     /// </summary>
     public ValidationResult ValidateInstallation()
     {
@@ -132,13 +146,8 @@ public class WoWConfigurationService
             return result;
         }
 
-        var fontsPath = GetFontsPath();
-        if (!Directory.Exists(fontsPath))
-        {
-            result.IsValid = false;
-            result.Errors.Add($"WoW Fonts folder not found at: {fontsPath}");
-            return result;
-        }
+        // Note: Fonts directory is not checked here because it may not exist in a fresh WoW installation
+        // The font replacement service will create it automatically when needed
 
         return result;
     }
