@@ -64,6 +64,9 @@ public class FontPreviewService : IFontPreviewService
     {
         // Detect locale from path
         var pathLower = fontPath.ToLowerInvariant();
+
+        if (pathLower.Contains("enus") || pathLower.Contains("en_us"))
+            return _renderingService.GetDefaultSampleText("enUS");
         
         if (pathLower.Contains("zhcn") || pathLower.Contains("zh_cn"))
             return _renderingService.GetDefaultSampleText("zhCN");
@@ -80,8 +83,8 @@ public class FontPreviewService : IFontPreviewService
         if (pathLower.Contains("jajp") || pathLower.Contains("ja_jp"))
             return _renderingService.GetDefaultSampleText("jaJP");
         
-        // Default to English
-        return _renderingService.GetDefaultSampleText("enUS");
+        // Default to Simplified Chinese
+        return _renderingService.GetDefaultSampleText("zhCN");
     }
 
     private Bitmap? ConvertToAvaloniaBitmap(SKBitmap skBitmap)
