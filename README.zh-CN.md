@@ -2,6 +2,8 @@
 
 一款专为《魔兽世界》玩家设计的字体管理工具，可轻松浏览、预览和替换游戏字体。
 
+![Screenshot](https://s2.loli.net/2025/10/28/hIdXWDy4MJg8nzN.png)
+
 ## 功能特性
 
 - **字体浏览与预览**：实时渲染字体文件，支持多种字体格式（TTF、OTF、TTC、WOFF、WOFF2）

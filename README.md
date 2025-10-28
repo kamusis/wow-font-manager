@@ -2,6 +2,8 @@
 
 A specialized font management tool designed for World of Warcraft players to browse, preview, and replace game fonts with ease.
 
+![Screenshot](https://s2.loli.net/2025/10/28/hIdXWDy4MJg8nzN.png)
+
 ## Features
 
 - **Font Browsing & Preview**: Real-time rendering of font files, supporting multiple formats (TTF, OTF, TTC, WOFF, WOFF2)
