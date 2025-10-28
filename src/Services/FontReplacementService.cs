@@ -45,13 +45,6 @@ public class FontReplacementService : IFontReplacementService
             progress?.Report(10);
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Create backup
-            var backupInfo = await CreateBackupAsync(operation.TargetClient);
-            result.BackupInfo = backupInfo;
-
-            progress?.Report(30);
-            cancellationToken.ThrowIfCancellationRequested();
-
             // Get target font files based on all categories
             var allTargetFiles = new List<string>();
             foreach (var category in operation.Categories)
@@ -75,6 +68,16 @@ public class FontReplacementService : IFontReplacementService
                 return result;
             }
 
+            progress?.Report(20);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Create backup for files that will be replaced
+            var backupInfo = await CreateBackupAsync(operation.TargetClient, targetFiles);
+            result.BackupInfo = backupInfo;
+
+            progress?.Report(40);
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Replace fonts
             var totalFiles = targetFiles.Count;
             var processedFiles = 0;
@@ -97,7 +100,7 @@ public class FontReplacementService : IFontReplacementService
                 }
 
                 processedFiles++;
-                var progressPercent = 30 + (int)((processedFiles / (double)totalFiles) * 70);
+                var progressPercent = 40 + (int)((processedFiles / (double)totalFiles) * 60);
                 progress?.Report(progressPercent);
             }
 
@@ -353,17 +356,16 @@ public class FontReplacementService : IFontReplacementService
     }
 
     /// <summary>
-    /// Creates a backup of current fonts by renaming the Fonts folder
+    /// Creates a backup of specific font files that will be replaced
     /// </summary>
-    private async Task<BackupInfo> CreateBackupAsync(WoWClientConfiguration client)
+    private async Task<BackupInfo> CreateBackupAsync(WoWClientConfiguration client, List<string> targetFiles)
     {
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         var fontsPath = client.FontsPath;
         
-        // If Fonts folder doesn't exist, no backup needed
+        // If Fonts folder doesn't exist, create it
         if (!Directory.Exists(fontsPath))
         {
-            // Create new Fonts folder
             Directory.CreateDirectory(fontsPath);
             
             return new BackupInfo
@@ -392,11 +394,21 @@ public class FontReplacementService : IFontReplacementService
             counter++;
         }
 
-        // Rename Fonts folder to backup name
-        await Task.Run(() => Directory.Move(fontsPath, backupDir));
-        
-        // Create new empty Fonts folder
-        Directory.CreateDirectory(fontsPath);
+        // Create backup directory
+        Directory.CreateDirectory(backupDir);
+
+        // Backup only the files that will be replaced
+        var backedUpFiles = new List<string>();
+        foreach (var targetFile in targetFiles)
+        {
+            var sourcePath = Path.Combine(fontsPath, targetFile);
+            if (File.Exists(sourcePath))
+            {
+                var backupPath = Path.Combine(backupDir, targetFile);
+                await Task.Run(() => File.Copy(sourcePath, backupPath, overwrite: false));
+                backedUpFiles.Add(targetFile);
+            }
+        }
 
         var backupInfo = new BackupInfo
         {
@@ -405,7 +417,7 @@ public class FontReplacementService : IFontReplacementService
             ClientType = client.ClientType,
             Locale = client.Locale,
             SourceFont = string.Empty, // Will be set later
-            ReplacedFiles = new List<string>(),
+            ReplacedFiles = backedUpFiles,
             Categories = new List<ReplacementCategory>()
         };
 
