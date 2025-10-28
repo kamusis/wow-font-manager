@@ -169,12 +169,14 @@ jobs:
           fi
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
           name: Release ${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
           files: |
             artifacts/WowFontManager-win-x64/WowFontManager-win-x64.zip
             artifacts/WowFontManager-osx-x64/WowFontManager-osx-x64.tar.gz
