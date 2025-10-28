@@ -1,0 +1,210 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - platform: win-x64
+            os: windows-latest
+            exe_name: WowFontManager.exe
+          - platform: osx-x64
+            os: macos-latest
+            exe_name: WowFontManager
+          - platform: osx-arm64
+            os: macos-latest
+            exe_name: WowFontManager
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/WowFontManager.csproj
+
+      - name: Build portable executable
+        run: |
+          dotnet publish src/WowFontManager.csproj \
+            --configuration Release \
+            --runtime ${{ matrix.platform }} \
+            --output publish/${{ matrix.platform }} \
+            --self-contained true \
+            /p:PublishSingleFile=true \
+            /p:IncludeNativeLibrariesForSelfExtract=true \
+            /p:DebugType=None \
+            /p:DebugSymbols=false \
+            /p:EnableCompressionInSingleFile=true
+        shell: bash
+
+      - name: Create fonts directory structure
+        run: |
+          mkdir -p package/fonts/enUS
+          mkdir -p package/fonts/jaJP
+          mkdir -p package/fonts/zhCN
+          mkdir -p package/fonts/zhTW
+        shell: bash
+
+      - name: Copy all fonts
+        run: |
+          # Copy all enUS fonts
+          if [ -d "fonts/enUS" ]; then
+            cp -r fonts/enUS/* package/fonts/enUS/ 2>/dev/null || true
+          fi
+          
+          # Copy all jaJP fonts
+          if [ -d "fonts/jaJP" ]; then
+            cp -r fonts/jaJP/* package/fonts/jaJP/ 2>/dev/null || true
+          fi
+          
+          # Copy all zhCN fonts
+          if [ -d "fonts/zhCN" ]; then
+            cp -r fonts/zhCN/* package/fonts/zhCN/ 2>/dev/null || true
+          fi
+          
+          # Copy all zhTW fonts
+          if [ -d "fonts/zhTW" ]; then
+            cp -r fonts/zhTW/* package/fonts/zhTW/ 2>/dev/null || true
+          fi
+        shell: bash
+
+      - name: Copy executable to package
+        run: |
+          cp publish/${{ matrix.platform }}/${{ matrix.exe_name }} package/
+        shell: bash
+
+      - name: Create README for package
+        run: |
+          cat > package/README.txt << 'EOF'
+          WoW Font Manager - Portable Edition
+          ====================================
+
+          Usage:
+          1. Run WowFontManager to launch the application
+          2. The 'fonts' folder contains sample fonts
+          3. You can add more fonts to the language-specific directories
+          4. Configure your WoW installation path in the application
+          5. Select and apply fonts to your game
+
+          Directory Structure:
+          - fonts/enUS/  - English fonts
+          - fonts/jaJP/  - Japanese fonts
+          - fonts/zhCN/  - Simplified Chinese fonts
+          - fonts/zhTW/  - Traditional Chinese fonts
+
+          For more information, visit:
+          https://github.com/${{ github.repository }}
+          EOF
+        shell: bash
+
+      - name: Create archive (Windows)
+        if: matrix.platform == 'win-x64'
+        run: |
+          cd package
+          7z a -tzip ../WowFontManager-${{ matrix.platform }}.zip *
+        shell: bash
+
+      - name: Create archive (Unix)
+        if: matrix.platform != 'win-x64'
+        run: |
+          cd package
+          tar -czf ../WowFontManager-${{ matrix.platform }}.tar.gz *
+        shell: bash
+
+      - name: Upload artifact (Windows)
+        if: matrix.platform == 'win-x64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: WowFontManager-${{ matrix.platform }}
+          path: WowFontManager-${{ matrix.platform }}.zip
+          retention-days: 7
+
+      - name: Upload artifact (Unix)
+        if: matrix.platform != 'win-x64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: WowFontManager-${{ matrix.platform }}
+          path: WowFontManager-${{ matrix.platform }}.tar.gz
+          retention-days: 7
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure
+        run: ls -R artifacts
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/WowFontManager-win-x64/WowFontManager-win-x64.zip
+            artifacts/WowFontManager-osx-x64/WowFontManager-osx-x64.tar.gz
+            artifacts/WowFontManager-osx-arm64/WowFontManager-osx-arm64.tar.gz
+          body: |
+            ## WoW Font Manager ${{ steps.get_version.outputs.version }}
+            
+            ### 下载说明 / Download Instructions
+            
+            选择适合您操作系统的版本：
+            Choose the version for your operating system:
+            
+            - **Windows**: `WowFontManager-win-x64.zip`
+            - **macOS (Intel)**: `WowFontManager-osx-x64.tar.gz`
+            - **macOS (Apple Silicon)**: `WowFontManager-osx-arm64.tar.gz`
+            
+            ### 使用方法 / Usage
+            
+            1. 下载并解压对应平台的压缩包
+            2. 运行 WowFontManager 可执行文件
+            3. fonts 目录包含示例字体，您可以添加更多字体
+            4. 在应用中配置您的 WoW 安装路径
+            5. 选择并应用字体到游戏
+            
+            ---
+            
+            1. Download and extract the archive for your platform
+            2. Run the WowFontManager executable
+            3. The fonts directory contains sample fonts, you can add more
+            4. Configure your WoW installation path in the application
+            5. Select and apply fonts to your game
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
