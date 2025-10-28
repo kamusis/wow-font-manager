@@ -96,25 +96,19 @@
   "ruRU": {
     "All": [
       "FRIZQT__.ttf",
-      "FRIZQT___CYR.ttf",
       "MORPHEUS.ttf",
-      "MORPHEUS_CYR.ttf",
       "ARIALN.ttf",
-      "SKURRI.ttf",
-      "SKURRI_CYR.ttf"
+      "SKURRI.ttf"
     ],
     "MainUI": [
       "FRIZQT__.ttf",
-      "FRIZQT___CYR.ttf",
-      "MORPHEUS.ttf",
-      "MORPHEUS_CYR.ttf"
+      "MORPHEUS.ttf"
     ],
     "Chat": [
       "ARIALN.ttf"
     ],
     "Damage": [
-      "SKURRI.ttf",
-      "SKURRI_CYR.ttf"
+      "SKURRI.ttf"
     ]
   }
 }

@@ -42,9 +42,13 @@
                             <Style Selector="TreeViewItem TextBlock">
                                 <Setter Property="Foreground" Value="#1A1A1A" />
                             </Style>
-                            <!-- Selected item uses light background to maintain contrast with dark text -->
-                            <Style Selector="TreeViewItem:selected /template/ ContentPresenter">
-                                <Setter Property="Background" Value="#E3F2FD" />
+                            <!-- Selected item with slightly darker gray background for better readability -->
+                            <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+                                <Setter Property="Background" Value="#E0E0E0" />
+                            </Style>
+                            <!-- Hover effect with light gray -->
+                            <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+                                <Setter Property="Background" Value="#F5F5F5" />
                             </Style>
                         </TreeView.Styles>
                         <TreeView.ItemTemplate>

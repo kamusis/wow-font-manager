@@ -309,11 +309,11 @@ public partial class FontBrowserViewModel : ViewModelBase
                 FolderPath = folderGroup.Key
             };
 
-            foreach (var font in folderGroup.OrderBy(f => f.DisplayName))
+            foreach (var font in folderGroup.OrderBy(f => f.FileName))
             {
                 var fontNode = new FontTreeNode
                 {
-                    Name = font.DisplayName,
+                    Name = font.FileName,  // Optional DisplayName
                     NodeType = FontTreeNodeType.Font,
                     FontInfo = font
                 };

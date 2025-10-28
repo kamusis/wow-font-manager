@@ -9,7 +9,8 @@
         x:DataType="vm:MainWindowViewModel"
         Title="WoW Font Manager"
         Width="1200"
-        Height="700">
+        Height="700"
+        Icon="/Assets/avalonia-logo.ico">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
