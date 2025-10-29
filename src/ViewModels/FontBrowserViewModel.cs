@@ -48,6 +48,9 @@ public partial class FontBrowserViewModel : ViewModelBase
     [ObservableProperty]
     private string _wowInstallPath = string.Empty;
 
+    [ObservableProperty]
+    private string _googleFontsApiKey = string.Empty;
+
     public FontBrowserViewModel(
         IFontDiscoveryService fontDiscoveryService,
         IFontMetadataService fontMetadataService,
@@ -69,6 +72,10 @@ public partial class FontBrowserViewModel : ViewModelBase
         
         // Initialize WoW installation path
         WowInstallPath = _wowConfigurationService.GetWoWInstallationPath();
+        
+        // Initialize Google Fonts API key
+        var settings = _configurationService.GetSettings();
+        GoogleFontsApiKey = settings.GoogleFontsApiKey ?? string.Empty;
     }
 
     /// <summary>
@@ -426,5 +433,103 @@ public partial class FontBrowserViewModel : ViewModelBase
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Opens a dialog to input Google Fonts API key
+    /// </summary>
+    [RelayCommand]
+    private async Task SetGoogleFontsApiKeyAsync()
+    {
+        try
+        {
+            var mainWindow = GetMainWindow();
+            if (mainWindow == null)
+            {
+                StatusMessage = "Error: Could not find main window";
+                return;
+            }
+
+            // Create a simple text input dialog
+            var dialog = new Avalonia.Controls.Window
+            {
+                Title = "Google Fonts API Key",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var textBox = new Avalonia.Controls.TextBox
+            {
+                Text = GoogleFontsApiKey,
+                Margin = new Avalonia.Thickness(15),
+                Height = 40,
+                Watermark = "Enter your Google Fonts API key here",
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+                Padding = new Avalonia.Thickness(10, 8)
+            };
+
+            var okButton = new Avalonia.Controls.Button
+            {
+                Content = "OK",
+                Width = 80,
+                Margin = new Avalonia.Thickness(10)
+            };
+
+            var cancelButton = new Avalonia.Controls.Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Margin = new Avalonia.Thickness(10)
+            };
+
+            var buttonPanel = new Avalonia.Controls.StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Spacing = 10,
+                Margin = new Avalonia.Thickness(15, 10, 15, 15)
+            };
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            var panel = new Avalonia.Controls.StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Vertical,
+                Spacing = 10
+            };
+
+            panel.Children.Add(new Avalonia.Controls.TextBlock
+            {
+                Text = "Enter your Google Fonts API key:",
+                Margin = new Avalonia.Thickness(15, 15, 15, 5),
+                Foreground = Avalonia.Media.Brushes.Black
+            });
+            panel.Children.Add(textBox);
+            panel.Children.Add(buttonPanel);
+
+            dialog.Content = panel;
+
+            bool? result = null;
+
+            okButton.Click += (s, e) => { result = true; dialog.Close(); };
+            cancelButton.Click += (s, e) => { result = false; dialog.Close(); };
+
+            await dialog.ShowDialog(mainWindow);
+
+            if (result == true)
+            {
+                var apiKey = textBox.Text ?? string.Empty;
+                GoogleFontsApiKey = apiKey;
+                await _configurationService.UpdateSettingAsync("GoogleFontsApiKey", apiKey);
+                StatusMessage = apiKey.Length > 0 ? "Google Fonts API key saved successfully" : "Google Fonts API key cleared";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error setting API key: {ex.Message}";
+        }
     }
 }

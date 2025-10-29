@@ -99,4 +99,9 @@ public class AppSettings
     /// Enable subpixel rendering
     /// </summary>
     public bool EnableSubpixelRendering { get; set; } = true;
+
+    /// <summary>
+    /// Google Fonts API key
+    /// </summary>
+    public string? GoogleFontsApiKey { get; set; }
 }
