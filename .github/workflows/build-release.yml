@@ -63,9 +63,14 @@ jobs:
         if: startsWith(matrix.platform, 'osx-')
         shell: bash
         run: |
+          # Derive numeric bundle version from tag: strip leading 'v' and cut at first '-'
           if [[ "${GITHUB_REF_NAME}" == v* ]]; then
-            VER="${GITHUB_REF_NAME#v}"
+            RAW="${GITHUB_REF_NAME#v}"
+            VER="${RAW%%-*}"
           else
+            VER=""
+          fi
+          if [[ -z "$VER" ]]; then
             VER="1.0.${GITHUB_RUN_NUMBER}"
           fi
           echo "BUNDLE_VER=$VER" >> "$GITHUB_ENV"
@@ -145,6 +150,12 @@ jobs:
           Notes:
           - The app bundle already contains a fonts directory at Contents/MacOS/fonts
           - You can add more fonts by placing them into that folder
+
+          Gatekeeper / Security Prompts:
+          - If you see a message like "App is damaged and can’t be opened", this is Gatekeeper blocking an unsigned app.
+          - Terminal (required): Remove the quarantine attribute, then open:
+              cd "<extracted-folder>"
+              xattr -dr com.apple.quarantine "WowFontManager.app"
 
           Directory Structure:
           - fonts/enUS/  - English fonts
@@ -270,14 +281,26 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Detect release channel
+        id: channel
+        run: |
+          TAG="${{ steps.get_version.outputs.version }}"
+          if [[ "$TAG" == *-* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "make_latest=false" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+            echo "make_latest=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
           name: Release ${{ steps.get_version.outputs.version }}
           draft: false
-          prerelease: false
-          make_latest: true
+          prerelease: ${{ steps.channel.outputs.prerelease }}
+          make_latest: ${{ steps.channel.outputs.make_latest }}
           fail_on_unmatched_files: true
           files: |
             artifacts/WowFontManager-win-x64/WowFontManager-win-x64.zip
@@ -304,8 +327,11 @@ jobs:
             
             - macOS:
               1. 下载并解压 `WowFontManager-osx-*.tar.gz`
-              2. 双击运行 `WowFontManager.app`（如被 Gatekeeper 拦截，请右键-打开）
-              3. 应用内置 `Contents/MacOS/fonts` 目录，可自行添加更多字体
+              2. 若提示“已损坏/无法打开”，请在终端移除隔离属性：
+                 cd "<解压后的目录>"
+                 xattr -dr com.apple.quarantine "WowFontManager.app"
+              3. 双击运行 `WowFontManager.app`
+              4. 应用内置 `Contents/MacOS/fonts` 目录，可自行添加更多字体
             
             通用：
             4. 在应用中配置您的 WoW 安装路径
@@ -320,8 +346,11 @@ jobs:
 
             - macOS:
               1. Download and extract `WowFontManager-osx-*.tar.gz`
-              2. Double-click `WowFontManager.app` (if blocked by Gatekeeper, right-click → Open)
-              3. The app contains `Contents/MacOS/fonts`; you can add more fonts there
+              2. If you see “App is damaged and can’t be opened”, remove the quarantine attributes:
+                 cd "<extracted-folder>"
+                 xattr -dr com.apple.quarantine "WowFontManager.app"
+              3. Double-click `WowFontManager.app`
+              4. The app contains `Contents/MacOS/fonts`; you can add more fonts there
 
             Common:
             4. Configure your WoW installation path in the application
