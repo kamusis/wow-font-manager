@@ -37,11 +37,15 @@ public class RenderingService : IRenderingService
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Apply DPI scaling for high-resolution displays
+            var dpiScale = config.DpiScale;
+            var scaledFontSize = config.FontSize * dpiScale;
+
             // Create paint with anti-aliasing and subpixel rendering
             using var paint = new SKPaint
             {
                 Typeface = typeface,
-                TextSize = config.FontSize,
+                TextSize = scaledFontSize,
                 IsAntialias = true,
                 SubpixelText = true,
                 LcdRenderText = true,
@@ -50,23 +54,23 @@ public class RenderingService : IRenderingService
             };
 
             // Measure text to determine canvas size
-            var textBounds = MeasureText(config.SampleText, typeface, config.FontSize);
-            var canvasWidth = Math.Max((int)Math.Ceiling(textBounds.Width) + 40, config.Width);
-            var canvasHeight = Math.Max((int)Math.Ceiling(textBounds.Height) + 40, config.Height);
+            var textBounds = MeasureText(config.SampleText, typeface, scaledFontSize);
+            var canvasWidth = (int)Math.Max(Math.Ceiling(textBounds.Width) + 40 * dpiScale, config.Width * dpiScale);
+            var canvasHeight = (int)Math.Max(Math.Ceiling(textBounds.Height) + 40 * dpiScale, config.Height * dpiScale);
 
-            // Create bitmap and canvas
+            // Create bitmap and canvas with DPI-scaled dimensions
             var bitmap = new SKBitmap(canvasWidth, canvasHeight);
             using var canvas = new SKCanvas(bitmap);
 
             // Fill background
             canvas.Clear(config.BackgroundColor);
 
-            // Calculate starting position (centered)
-            var x = 20f;
-            var y = 20f - textBounds.Top;
+            // Calculate starting position (centered) with DPI scaling
+            var x = 20f * dpiScale;
+            var y = (20f - textBounds.Top) * dpiScale;
 
             // Render text with layout
-            RenderTextLayout(canvas, config.SampleText, typeface, config.FontSize, new SKPoint(x, y), paint);
+            RenderTextLayout(canvas, config.SampleText, typeface, scaledFontSize, new SKPoint(x, y), paint);
 
             return bitmap;
         }, cancellationToken);

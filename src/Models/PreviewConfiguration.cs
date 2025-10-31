@@ -61,6 +61,11 @@ public class PreviewConfiguration
     /// Height of the preview canvas in pixels
     /// </summary>
     public int Height { get; set; } = 200;
+
+    /// <summary>
+    /// DPI scale factor for high-resolution displays (e.g., 1.25 for 125% scaling)
+    /// </summary>
+    public float DpiScale { get; set; } = 1.0f;
 }
 
 /// <summary>

@@ -39,7 +39,8 @@ public class FontPreviewService : IFontPreviewService
                 BackgroundColor = SKColors.White,
                 TextColor = SKColors.Black,
                 AntiAliasing = true,
-                SubpixelRendering = true
+                SubpixelRendering = true,
+                DpiScale = 1.25f  // Hardcoded DPI scaling for 125% display scaling
             };
 
             // Render using the rendering service
