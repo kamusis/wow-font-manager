@@ -44,6 +44,7 @@ jobs:
         run: dotnet restore src/WowFontManager.csproj
 
       - name: Build portable executable
+        if: matrix.platform == 'win-x64'
         run: |
           dotnet publish src/WowFontManager.csproj \
             --configuration Release \
@@ -57,7 +58,107 @@ jobs:
             -p:EnableCompressionInSingleFile=true
         shell: bash
 
-      - name: Create fonts directory structure
+      # macOS only: derive bundle version from tag or fallback to run number
+      - name: Derive bundle version (macOS)
+        if: startsWith(matrix.platform, 'osx-')
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == v* ]]; then
+            VER="${GITHUB_REF_NAME#v}"
+          else
+            VER="1.0.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "BUNDLE_VER=$VER" >> "$GITHUB_ENV"
+
+      # macOS only: create .app bundle using Dotnet.Bundle
+      - name: Bundle macOS .app
+        if: startsWith(matrix.platform, 'osx-')
+        shell: bash
+        run: |
+          dotnet msbuild src/WowFontManager.csproj \
+            -t:BundleApp \
+            -p:RuntimeIdentifier=${{ matrix.platform }} \
+            -p:Configuration=Release \
+            -p:UseAppHost=true \
+            -p:PublishSingleFile=false \
+            -p:CFBundleName=WowFontManager \
+            -p:CFBundleDisplayName="WowFontManager" \
+            -p:CFBundleIdentifier=me.kamusis.wowfontmanager \
+            -p:CFBundleShortVersionString=${{ env.BUNDLE_VER }} \
+            -p:CFBundleVersion=${{ env.BUNDLE_VER }}
+
+      # macOS only: inject repo fonts into .app/Contents/MacOS/fonts
+      - name: Inject fonts into .app (macOS)
+        if: startsWith(matrix.platform, 'osx-')
+        shell: bash
+        run: |
+          APP_PATH=$(find src/bin/Release/net9.0/${{ matrix.platform }}/publish -maxdepth 1 -name "*.app" -print -quit)
+          echo "App path: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          if [ -d "fonts" ]; then
+            mkdir -p "$APP_PATH/Contents/MacOS/fonts"
+            rsync -a fonts/ "$APP_PATH/Contents/MacOS/fonts/"
+          else
+            echo "No repo fonts/ directory, skipping"
+          fi
+
+      # macOS only: install prebuilt .icns from Assets and set CFBundleIconFile
+      - name: Install app icon from Assets (.icns) (macOS)
+        if: startsWith(matrix.platform, 'osx-')
+        shell: bash
+        run: |
+          APP_PATH=$(find src/bin/Release/net9.0/${{ matrix.platform }}/publish -maxdepth 1 -name "*.app" -print -quit)
+          echo "Using app: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          ICON_SRC="src/Assets/wowfm-osx-logo.icns"
+          if [ ! -f "$ICON_SRC" ]; then echo "Icon file $ICON_SRC not found"; exit 1; fi
+          mkdir -p "$APP_PATH/Contents/Resources"
+          cp "$ICON_SRC" "$APP_PATH/Contents/Resources/wowfm-osx-logo.icns"
+          PLIST="$APP_PATH/Contents/Info.plist"
+          # Set or add CFBundleIconFile
+          if /usr/libexec/PlistBuddy -c "Print :CFBundleIconFile" "$PLIST" >/dev/null 2>&1; then
+            /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile wowfm-osx-logo.icns" "$PLIST"
+          else
+            /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string wowfm-osx-logo.icns" "$PLIST"
+          fi
+
+      # macOS only: archive .app as tar.gz with README
+      - name: Archive macOS .app as tar.gz with README
+        if: startsWith(matrix.platform, 'osx-')
+        shell: bash
+        run: |
+          APP_PATH=$(find src/bin/Release/net9.0/${{ matrix.platform }}/publish -maxdepth 1 -name "*.app" -print -quit)
+          echo "Staging: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          STAGE_DIR="macpkg-${{ matrix.platform }}"
+          rm -rf "$STAGE_DIR" && mkdir -p "$STAGE_DIR"
+          cp -R "$APP_PATH" "$STAGE_DIR/"
+          cat > "$STAGE_DIR/README.txt" << 'EOF'
+          WoW Font Manager (macOS)
+          ========================
+
+          Usage:
+          1) Extract this archive
+          2) Double-click WowFontManager.app to launch
+          3) If macOS blocks the app, right-click the app and choose "Open"
+
+          Notes:
+          - The app bundle already contains a fonts directory at Contents/MacOS/fonts
+          - You can add more fonts by placing them into that folder
+
+          Directory Structure:
+          - fonts/enUS/  - English fonts
+          - fonts/jaJP/  - Japanese fonts
+          - fonts/zhCN/  - Simplified Chinese fonts
+          - fonts/zhTW/  - Traditional Chinese fonts
+
+          For more information, visit:
+          https://github.com/${{ github.repository }}
+          EOF
+          tar -C "$STAGE_DIR" -czf "WowFontManager-${{ matrix.platform }}.tar.gz" .
+
+      - name: Create fonts directory structure (Windows only)
+        if: matrix.platform == 'win-x64'
         run: |
           mkdir -p package/fonts/enUS
           mkdir -p package/fonts/jaJP
@@ -65,7 +166,8 @@ jobs:
           mkdir -p package/fonts/zhTW
         shell: bash
 
-      - name: Copy all fonts
+      - name: Copy all fonts (Windows only)
+        if: matrix.platform == 'win-x64'
         run: |
           # Copy all enUS fonts
           if [ -d "fonts/enUS" ]; then
@@ -88,15 +190,17 @@ jobs:
           fi
         shell: bash
 
-      - name: Copy executable to package
+      - name: Copy executable to package (Windows only)
+        if: matrix.platform == 'win-x64'
         run: |
           cp publish/${{ matrix.platform }}/${{ matrix.exe_name }} package/
         shell: bash
 
-      - name: Create README for package
+      - name: Create README for package (Windows only)
+        if: matrix.platform == 'win-x64'
         run: |
           cat > package/README.txt << 'EOF'
-          WoW Font Manager - Portable Edition
+          WoW Font Manager (Windows) Portable Edition
           ====================================
 
           Usage:
@@ -124,12 +228,7 @@ jobs:
           7z a -tzip ../WowFontManager-${{ matrix.platform }}.zip *
         shell: bash
 
-      - name: Create archive (Unix)
-        if: matrix.platform != 'win-x64'
-        run: |
-          cd package
-          tar -czf ../WowFontManager-${{ matrix.platform }}.tar.gz *
-        shell: bash
+      # No generic Unix portable archive; macOS uses the .app tarball above
 
       - name: Upload artifact (Windows)
         if: matrix.platform == 'win-x64'
@@ -139,8 +238,8 @@ jobs:
           path: WowFontManager-${{ matrix.platform }}.zip
           retention-days: 7
 
-      - name: Upload artifact (Unix)
-        if: matrix.platform != 'win-x64'
+      - name: Upload artifact (macOS .app tar.gz)
+        if: startsWith(matrix.platform, 'osx-')
         uses: actions/upload-artifact@v4
         with:
           name: WowFontManager-${{ matrix.platform }}
@@ -193,22 +292,38 @@ jobs:
             Choose the version for your operating system:
             
             - **Windows**: `WowFontManager-win-x64.zip`
-            - **macOS (Intel)**: `WowFontManager-osx-x64.tar.gz`
-            - **macOS (Apple Silicon)**: `WowFontManager-osx-arm64.tar.gz`
+            - **macOS (Intel)**: `WowFontManager-osx-x64.tar.gz` 
+            - **macOS (Apple Silicon)**: `WowFontManager-osx-arm64.tar.gz` 
             
             ### 使用方法 / Usage
             
-            1. 下载并解压对应平台的压缩包
-            2. 运行 WowFontManager 可执行文件
-            3. fonts 目录包含示例字体，您可以添加更多字体
+            - Windows:
+              1. 下载并解压 `WowFontManager-win-x64.zip`
+              2. 双击运行 `WowFontManager.exe`
+              3. `fonts` 目录包含示例字体，您可以添加更多字体
+            
+            - macOS:
+              1. 下载并解压 `WowFontManager-osx-*.tar.gz`
+              2. 双击运行 `WowFontManager.app`（如被 Gatekeeper 拦截，请右键-打开）
+              3. 应用内置 `Contents/MacOS/fonts` 目录，可自行添加更多字体
+            
+            通用：
             4. 在应用中配置您的 WoW 安装路径
             5. 选择并应用字体到游戏
             
             ---
             
-            1. Download and extract the archive for your platform
-            2. Run the WowFontManager executable
-            3. The fonts directory contains sample fonts, you can add more
+            - Windows:
+              1. Download and extract `WowFontManager-win-x64.zip`
+              2. Double-click `WowFontManager.exe`
+              3. The `fonts` directory contains sample fonts; you can add more
+
+            - macOS:
+              1. Download and extract `WowFontManager-osx-*.tar.gz`
+              2. Double-click `WowFontManager.app` (if blocked by Gatekeeper, right-click → Open)
+              3. The app contains `Contents/MacOS/fonts`; you can add more fonts there
+
+            Common:
             4. Configure your WoW installation path in the application
             5. Select and apply fonts to your game
         env:
