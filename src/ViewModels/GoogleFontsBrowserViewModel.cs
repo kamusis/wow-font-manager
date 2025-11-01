@@ -325,11 +325,13 @@ public partial class GoogleFontsBrowserViewModel : ViewModelBase
     {
         return locale switch
         {
+            // Keep latin + latin-ext for enUS
             "enUS" => new[] { "latin", "latin-ext" },
-            "zhCN" => new[] { "chinese-simplified", "latin", "latin-ext" },
-            "zhTW" => new[] { "chinese-traditional", "latin", "latin-ext" },
-            "jaJP" => new[] { "japanese", "latin", "latin-ext" },
-            "koKR" => new[] { "korean", "latin", "latin-ext" },
+            // For CJK locales, filter strictly by the primary subset
+            "zhCN" => new[] { "chinese-simplified" },
+            "zhTW" => new[] { "chinese-traditional" },
+            "jaJP" => new[] { "japanese" },
+            "koKR" => new[] { "korean" },
             _ => Array.Empty<string>()
         };
     }
