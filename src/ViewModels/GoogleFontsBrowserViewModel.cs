@@ -243,13 +243,25 @@ public partial class GoogleFontsBrowserViewModel : ViewModelBase
     {
         if (value != null)
         {
-            // Update available variants
-            AvailableVariants = new ObservableCollection<string>(value.Variants);
+            // Determine variants source: prefer Variants; fall back to Files keys
+            var variantsSource = (value.Variants != null && value.Variants.Count > 0)
+                ? value.Variants
+                : (value.Files?.Keys?.ToList() ?? new List<string>());
 
-            // Select first variant if current selection is not available
-            if (!value.Variants.Contains(SelectedVariant))
+            // Update available variants
+            AvailableVariants = new ObservableCollection<string>(variantsSource);
+
+            // Reset first to force UI re-selection
+            SelectedVariant = string.Empty;
+
+            // Prefer 'regular' when available; otherwise select the first variant
+            if (variantsSource.Contains("regular", StringComparer.OrdinalIgnoreCase))
             {
-                SelectedVariant = value.Variants.FirstOrDefault() ?? "regular";
+                SelectedVariant = variantsSource.First(v => v.Equals("regular", StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                SelectedVariant = variantsSource.FirstOrDefault() ?? "regular";
             }
         }
         else
