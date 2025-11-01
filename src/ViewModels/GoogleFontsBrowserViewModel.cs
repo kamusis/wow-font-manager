@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WowFontManager.Models;
@@ -59,6 +60,9 @@ public partial class GoogleFontsBrowserViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<string> _availableVariants = new();
 
+    [ObservableProperty]
+    private Bitmap? _previewImage;
+
     public GoogleFontsBrowserViewModel(
         IGoogleFontsService googleFontsService,
         IFontPreviewService fontPreviewService,
@@ -79,6 +83,78 @@ public partial class GoogleFontsBrowserViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(settings.GoogleFontsDefaultLocale))
         {
             SelectedLocale = settings.GoogleFontsDefaultLocale;
+        }
+
+    }
+
+    /// <summary>
+    /// Renders a preview image for the selected Google font using a lightweight cached "menu" font file
+    /// </summary>
+    private async Task RenderPreviewAsync(GoogleFontFamily font)
+    {
+        try
+        {
+            // Cancel any ongoing preview
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            StatusMessage = $"Preparing preview for {font.Family}...";
+
+            // Get local cached preview font path (downloads if missing)
+            var fontPath = await _googleFontsService.GetPreviewFontPathAsync(font, token);
+
+            // Build FontInfo for rendering
+            var fileInfo = new System.IO.FileInfo(fontPath);
+            var fontInfo = new FontInfo
+            {
+                FilePath = fontPath,
+                FamilyName = font.Family,
+                SubfamilyName = "Regular",
+                FileName = fileInfo.Name,
+                FileSize = fileInfo.Exists ? fileInfo.Length : 0,
+                FolderPath = null
+            };
+
+            // Decide sample text: if preview file resides in config cache, it's a menu font -> render family name/ASCII.
+            string? sampleText = null;
+            try
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var cacheRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(localAppData, "WowFontManager"));
+                var previewFull = System.IO.Path.GetFullPath(fontPath);
+                var isFromConfigCache = previewFull.StartsWith(cacheRoot, StringComparison.OrdinalIgnoreCase);
+
+                if (isFromConfigCache)
+                {
+                    // Menu subset: only safe ASCII; show the family name with a small ASCII set
+                    sampleText = $"\n{font.Family}";
+                }
+            }
+            catch { /* fall back to default sampleText */ }
+
+            StatusMessage = $"Rendering preview for {font.Family}...";
+            var bitmap = await _fontPreviewService.RenderPreviewAsync(fontInfo, sampleText, token);
+
+            if (bitmap != null)
+            {
+                PreviewImage = bitmap;
+                StatusMessage = $"Preview: {font.Family}";
+            }
+            else
+            {
+                PreviewImage = null;
+                StatusMessage = $"Failed to render preview for {font.Family}";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore cancellation
+        }
+        catch (Exception ex)
+        {
+            PreviewImage = null;
+            StatusMessage = $"Error generating preview: {ex.Message}";
         }
     }
 
@@ -263,10 +339,14 @@ public partial class GoogleFontsBrowserViewModel : ViewModelBase
             {
                 SelectedVariant = variantsSource.FirstOrDefault() ?? "regular";
             }
+
+            // Trigger preview rendering (fire and forget)
+            _ = RenderPreviewAsync(value);
         }
         else
         {
             AvailableVariants.Clear();
+            PreviewImage = null;
         }
 
         DownloadFontCommand.NotifyCanExecuteChanged();

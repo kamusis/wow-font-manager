@@ -20,6 +20,7 @@ public class GoogleFontsService : IGoogleFontsService
     private readonly string _cacheDirectory;
     private readonly string _cacheFilePath;
     private readonly string _fontsDirectory;
+    private readonly string _previewsDirectory;
 
     // Locale to subset mapping
     private static readonly Dictionary<string, string[]> LocaleToSubsets = new()
@@ -55,10 +56,12 @@ public class GoogleFontsService : IGoogleFontsService
 
         // Set up fonts directory
         _fontsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fonts");
+        _previewsDirectory = Path.Combine(_cacheDirectory, "previews");
 
         // Ensure directories exist
         Directory.CreateDirectory(_cacheDirectory);
         Directory.CreateDirectory(_fontsDirectory);
+        Directory.CreateDirectory(_previewsDirectory);
     }
 
     public async Task<List<GoogleFontFamily>> GetAllFontsAsync(bool includeCache = true, CancellationToken cancellationToken = default)
@@ -234,6 +237,126 @@ public class GoogleFontsService : IGoogleFontsService
 
         // Default to enUS if no match found
         return "enUS";
+    }
+
+    /// <summary>
+    /// Gets a local cached path to a lightweight preview font file for the specified Google font.
+    /// Prefers the 'Menu' font URL when available; otherwise falls back to a lightweight variant
+    /// (e.g., 'regular'). The file is cached under %LOCALAPPDATA%/WowFontManager/previews/<locale>/.
+    /// </summary>
+    /// <param name="fontFamily">Google font family metadata</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Absolute path to a local font file suitable for preview rendering</returns>
+    public async Task<string> GetPreviewFontPathAsync(GoogleFontFamily fontFamily, CancellationToken cancellationToken = default)
+    {
+        // Determine locale-specific preview folder
+        var locale = DetermineTargetFolder(fontFamily);
+        var localePreviewDir = Path.Combine(_previewsDirectory, locale);
+        Directory.CreateDirectory(localePreviewDir);
+
+        // Choose URL: prefer Menu, else fallback to 'regular' or first available variant
+        string? url = null;
+        string label = "Menu";
+
+        if (!string.IsNullOrWhiteSpace(fontFamily.Menu))
+        {
+            url = fontFamily.Menu;
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            // Fallback to a lightweight variant
+            string? variant = null;
+            if (fontFamily.Variants != null && fontFamily.Variants.Count > 0)
+            {
+                variant = fontFamily.Variants.Contains("regular", StringComparer.OrdinalIgnoreCase)
+                    ? fontFamily.Variants.First(v => v.Equals("regular", StringComparison.OrdinalIgnoreCase))
+                    : fontFamily.Variants.First();
+            }
+            else if (fontFamily.Files != null && fontFamily.Files.Count > 0)
+            {
+                variant = fontFamily.Files.Keys.Contains("regular", StringComparer.OrdinalIgnoreCase)
+                    ? fontFamily.Files.Keys.First(v => v.Equals("regular", StringComparison.OrdinalIgnoreCase))
+                    : fontFamily.Files.Keys.First();
+            }
+
+            if (variant != null && fontFamily.Files != null && fontFamily.Files.TryGetValue(variant, out var fileUrl))
+            {
+                url = fileUrl;
+                label = VariantToFileName(variant);
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new InvalidOperationException($"No preview URL available for font '{fontFamily.Family}'");
+        }
+
+        // Build destination path with original extension if present
+        string extension = ".ttf";
+        try
+        {
+            var uri = new Uri(url);
+            var ext = Path.GetExtension(uri.AbsolutePath);
+            if (!string.IsNullOrEmpty(ext) && ext.Length <= 5)
+            {
+                extension = ext;
+            }
+        }
+        catch
+        {
+            // ignore and use default .ttf
+        }
+
+        var safeFamily = SanitizeFileName(fontFamily.Family);
+        var fileName = $"{safeFamily}-{label}{extension}";
+        var targetPath = Path.Combine(localePreviewDir, fileName);
+
+        // Return cached file if it exists and non-empty
+        if (File.Exists(targetPath))
+        {
+            var info = new FileInfo(targetPath);
+            if (info.Length > 0)
+            {
+                return targetPath;
+            }
+            // delete zero-length file
+            TryDeleteFile(targetPath);
+        }
+
+        // Download the preview font
+        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+        await using (var fileStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+        {
+            await stream.CopyToAsync(fileStream, 8192, cancellationToken);
+        }
+
+        // Validate non-empty
+        var downloaded = new FileInfo(targetPath);
+        if (downloaded.Length == 0)
+        {
+            TryDeleteFile(targetPath);
+            throw new IOException("Downloaded preview font is empty");
+        }
+
+        return targetPath;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try { File.Delete(path); } catch { /* ignore */ }
+    }
+
+    private static string SanitizeFileName(string name)
+    {
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+        return name.Replace(' ', '_');
     }
 
     private async Task<GoogleFontsCache?> LoadCacheAsync(CancellationToken cancellationToken)

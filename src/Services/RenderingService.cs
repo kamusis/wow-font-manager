@@ -19,8 +19,8 @@ public class RenderingService : IRenderingService
         { "zhCN", "\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n临兵斗者皆阵列在前\n魔兽世界字体管理器\n简体中文测试文本" },
         { "zhTW", "\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n臨兵闘者皆陣列在前\n魔獸世界字體管理器\n繁體中文測試文本" },
         { "jaJP", "\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n臨兵闘者皆陣列在前\nワールド・オブ・ウォークラフト\n日本語テストテキスト" },
-        { "koKR", "재빠른 갈색 여우가 게으른 개를 뛰어넘습니다.\n월드 오브 워크래프트\n한국어 테스트 텍스트" },
-        { "ruRU", "Быстрая коричневая лиса перепрыгивает через ленивую собаку.\nWorld of Warcraft\nРусский тестовый текст" }
+        { "koKR", "\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\n재빠른 갈색 여우가 게으른 개를 뛰어넘습니다.\n월드 오브 워크래프트\n한국어 테스트 텍스트" },
+        { "ruRU", "\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n.;,' \"(!?) +-*/=\n\nБыстрая коричневая лиса перепрыгивает через ленивую собаку.\nWorld of Warcraft\nРусский тестовый текст" }
     };
 
     /// <inheritdoc/>

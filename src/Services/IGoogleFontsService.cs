@@ -64,4 +64,14 @@ public interface IGoogleFontsService
     /// <param name="fontFamily">Font family to check</param>
     /// <returns>Target folder name (e.g., "enUS", "zhCN")</returns>
     string DetermineTargetFolder(GoogleFontFamily fontFamily);
+
+    /// <summary>
+    /// Gets a local cached path to a lightweight preview font file for the specified Google font.
+    /// Prefers the 'Menu' font URL when available; otherwise falls back to a lightweight variant
+    /// (e.g., 'regular'). The file is cached under %LOCALAPPDATA%/WowFontManager/previews/<locale>/.
+    /// </summary>
+    /// <param name="fontFamily">Google font family metadata</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Absolute path to a local font file suitable for preview rendering</returns>
+    Task<string> GetPreviewFontPathAsync(GoogleFontFamily fontFamily, CancellationToken cancellationToken = default);
 }

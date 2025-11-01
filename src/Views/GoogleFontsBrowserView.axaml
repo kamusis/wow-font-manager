@@ -113,12 +113,18 @@
                             Padding="10">
                         <ScrollViewer HorizontalScrollBarVisibility="Auto" 
                                       VerticalScrollBarVisibility="Auto">
-                            <TextBlock Text="Select a font from the list to view details and download" 
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"
-                                       FontSize="16"
-                                       Foreground="#4A4A4A"
-                                       IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNull}}" />
+                            <Grid>
+                                <Image Source="{Binding PreviewImage}"
+                                       Stretch="Uniform"
+                                       IsVisible="{Binding PreviewImage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                                <TextBlock Text="Select a font from the list to view details and download" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Foreground="#4A4A4A"
+                                           IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNull}}" />
+                            </Grid>
                         </ScrollViewer>
                     </Border>
                 </DockPanel>

@@ -18,7 +18,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TabControl Background="#E8E8E8">
+    <TabControl x:Name="MainTabs" Background="#E8E8E8">
         <TabItem Header="📁 Local Fonts">
             <views:FontBrowserView x:Name="FontBrowserView" />
         </TabItem>
