@@ -1,0 +1,219 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:WowFontManager.ViewModels"
+             xmlns:models="using:WowFontManager.Models"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+             x:Class="WowFontManager.Views.GoogleFontsBrowserView"
+             x:DataType="vm:GoogleFontsBrowserViewModel">
+
+    <Design.DataContext>
+        <vm:GoogleFontsBrowserViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="#E8E8E8" Padding="10" BorderBrush="#CCCCCC" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*">
+                <!-- Refresh button -->
+                <Button Grid.Column="0" 
+                        Content="Refresh" 
+                        Command="{Binding RefreshGoogleFontsCommand}" 
+                        Margin="0,0,10,0">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="#FFFFFF" />
+                            <Setter Property="Foreground" Value="#1A1A1A" />
+                            <Setter Property="BorderBrush" Value="#CCCCCC" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="Padding" Value="10,8" />
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#F5F5F5" />
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <!-- Locale filter -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" Margin="0,0,10,0">
+                    <TextBlock Text="Locale:" VerticalAlignment="Center" Foreground="#1A1A1A" />
+                    <ComboBox ItemsSource="{Binding AvailableLocales}" 
+                              SelectedItem="{Binding SelectedLocale}"
+                              Width="100" />
+                </StackPanel>
+
+                <!-- Category filter -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="Category:" VerticalAlignment="Center" Foreground="#1A1A1A" />
+                    <ComboBox ItemsSource="{Binding AvailableCategories}" 
+                              SelectedItem="{Binding SelectedCategory}"
+                              Width="120" />
+                </StackPanel>
+
+                <!-- Loading indicator -->
+                <ProgressBar Grid.Column="3" 
+                             IsIndeterminate="True" 
+                             IsVisible="{Binding IsLoadingFonts}" 
+                             Width="100" 
+                             Height="20" 
+                             VerticalAlignment="Center" 
+                             HorizontalAlignment="Right"
+                             Margin="10,0,0,0" />
+            </Grid>
+        </Border>
+
+        <!-- Two-panel layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="400,*">
+            <!-- Left Panel: Font List -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#DDDDDD" BorderThickness="0,0,1,0" Padding="5">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Google Fonts" 
+                               FontWeight="Bold" 
+                               FontSize="14" 
+                               Margin="5,5,5,10"
+                               Foreground="#1A1A1A" />
+                    
+                    <DataGrid ItemsSource="{Binding GoogleFonts}"
+                              SelectedItem="{Binding SelectedGoogleFont}"
+                              IsReadOnly="True"
+                              GridLinesVisibility="None"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              CanUserReorderColumns="False"
+                              CanUserResizeColumns="True"
+                              CanUserSortColumns="True"
+                              AutoGenerateColumns="False"
+                              x:DataType="vm:GoogleFontsBrowserViewModel"
+                              x:CompileBindings="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Family" Binding="{Binding Family}" Width="*" />
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Right Panel: Preview & Download -->
+            <Border Grid.Column="1" Background="#F0F0F0" Padding="20">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Font Details" 
+                               FontWeight="Bold" 
+                               FontSize="14" 
+                               Margin="0,0,0,15"
+                               Foreground="#1A1A1A" />
+
+                    <!-- Details Panel -->
+                    <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
+                        <!-- Family Name -->
+                        <StackPanel Spacing="5" IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="Family:" FontWeight="Bold" Foreground="#1A1A1A" />
+                            <TextBlock Text="{Binding SelectedGoogleFont.Family}" Foreground="#4A4A4A" />
+                        </StackPanel>
+
+                        <!-- Category -->
+                        <StackPanel Spacing="5" IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="Category:" FontWeight="Bold" Foreground="#1A1A1A" />
+                            <TextBlock Text="{Binding SelectedGoogleFont.Category}" Foreground="#4A4A4A" />
+                        </StackPanel>
+
+                        <!-- Subsets -->
+                        <StackPanel Spacing="5" IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="Supported Languages:" FontWeight="Bold" Foreground="#1A1A1A" />
+                            <ItemsControl ItemsSource="{Binding SelectedGoogleFont.Subsets}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#E3F2FD" 
+                                                Padding="8,4" 
+                                                Margin="0,0,5,5" 
+                                                CornerRadius="4">
+                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#1A1A1A" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Variant Selector -->
+                        <StackPanel Spacing="5" IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="Variant:" FontWeight="Bold" Foreground="#1A1A1A" />
+                            <ComboBox ItemsSource="{Binding AvailableVariants}" 
+                                      SelectedItem="{Binding SelectedVariant}"
+                                      Width="200"
+                                      HorizontalAlignment="Left" />
+                        </StackPanel>
+
+                        <!-- Download Button -->
+                        <Button Content="Download Font"
+                                Command="{Binding DownloadFontCommand}"
+                                HorizontalAlignment="Left"
+                                Padding="10,8"
+                                Margin="0,10,0,0"
+                                IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                    <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Style>
+                                <Style Selector="Button:disabled">
+                                    <Setter Property="Background" Value="#E8E8E8" />
+                                    <Setter Property="Foreground" Value="#999999" />
+                                </Style>
+                                <Style Selector="Button:pointerover:not(:disabled)">
+                                    <Setter Property="Background" Value="#E3F2FD" />
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+
+                        <!-- Download Progress -->
+                        <StackPanel Spacing="5" IsVisible="{Binding IsDownloading}">
+                            <ProgressBar Value="{Binding DownloadProgress}" 
+                                         Minimum="0" 
+                                         Maximum="100" 
+                                         Height="20" />
+                            <TextBlock Text="{Binding DownloadProgress, StringFormat='{}{0}%'}" 
+                                       HorizontalAlignment="Center" 
+                                       Foreground="#1A1A1A" />
+                        </StackPanel>
+
+                        <!-- Placeholder when no font selected -->
+                        <TextBlock Text="Select a font from the list to view details and download" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Foreground="#4A4A4A"
+                                   Margin="0,50,0,0"
+                                   IsVisible="{Binding SelectedGoogleFont, Converter={x:Static ObjectConverters.IsNull}}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#E8E8E8" Padding="10" BorderBrush="#CCCCCC" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" 
+                           Text="{Binding StatusMessage}" 
+                           VerticalAlignment="Center" 
+                           FontSize="12"
+                           Foreground="#1A1A1A" />
+                <TextBlock Grid.Column="1" 
+                           VerticalAlignment="Center" 
+                           FontSize="12"
+                           Foreground="#1A1A1A">
+                    <Run Text="Fonts: " />
+                    <Run Text="{Binding GoogleFonts.Count}" FontWeight="Bold" />
+                </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
