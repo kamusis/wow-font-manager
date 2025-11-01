@@ -18,6 +18,13 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <views:FontBrowserView x:Name="FontBrowserView" />
+    <TabControl x:Name="MainTabs" Background="#E8E8E8">
+        <TabItem Header="📁 Local Fonts">
+            <views:FontBrowserView x:Name="FontBrowserView" />
+        </TabItem>
+        <TabItem Header="🌐 Google Fonts">
+            <views:GoogleFontsBrowserView x:Name="GoogleFontsBrowserView" />
+        </TabItem>
+    </TabControl>
 
 </Window>

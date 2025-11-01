@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -104,4 +105,19 @@ public class AppSettings
     /// Google Fonts API key
     /// </summary>
     public string? GoogleFontsApiKey { get; set; }
+
+    /// <summary>
+    /// Google Fonts cache validity period in hours
+    /// </summary>
+    public int GoogleFontsCacheExpiryHours { get; set; } = 24;
+
+    /// <summary>
+    /// Last successful Google Fonts API refresh timestamp
+    /// </summary>
+    public DateTime? GoogleFontsLastRefresh { get; set; }
+
+    /// <summary>
+    /// Default locale filter for Google Fonts browser
+    /// </summary>
+    public string GoogleFontsDefaultLocale { get; set; } = "enUS";
 }

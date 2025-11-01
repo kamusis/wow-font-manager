@@ -52,6 +52,7 @@ public partial class App : Application
             var wowConfigurationService = new WoWConfigurationService(
                 wowClientService, 
                 settings?.LastWoWClientPath); // Pass saved path if available
+            var googleFontsService = new GoogleFontsService(configurationService);
 
             // Create ViewModels
             var fontBrowserViewModel = new FontBrowserViewModel(
@@ -64,14 +65,21 @@ public partial class App : Application
                 wowConfigurationService,
                 configurationService); // Pass ConfigurationService to ViewModel
 
+            var googleFontsBrowserViewModel = new GoogleFontsBrowserViewModel(
+                googleFontsService,
+                fontPreviewService,
+                configurationService);
+
             // Create and configure MainWindow
             var mainWindow = new MainWindow();
             mainWindow.FontBrowserView.DataContext = fontBrowserViewModel;
+            mainWindow.GoogleFontsBrowserView.DataContext = googleFontsBrowserViewModel;
             
             desktop.MainWindow = mainWindow;
 
             // Auto-load fonts on startup (fire and forget)
             _ = fontBrowserViewModel.LoadFontsCommand.ExecuteAsync(null);
+            _ = googleFontsBrowserViewModel.LoadGoogleFontsCommand.ExecuteAsync(null);
         }
 
         base.OnFrameworkInitializationCompleted();
