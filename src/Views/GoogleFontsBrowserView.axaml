@@ -86,7 +86,7 @@
                               CanUserSortColumns="True"
                               AutoGenerateColumns="False"
                               x:DataType="vm:GoogleFontsBrowserViewModel"
-                              x:CompileBindings="False">
+                              x:CompileBindings="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Family" Binding="{Binding Family}" Width="*" />
                             <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="100" />

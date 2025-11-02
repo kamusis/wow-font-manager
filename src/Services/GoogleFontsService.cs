@@ -27,7 +27,7 @@ public class GoogleFontsService : IGoogleFontsService
     {
         { "enUS", new[] { "latin", "latin-ext" } },
         { "zhCN", new[] { "chinese-simplified", "latin", "latin-ext" } },
-        { "zhTW", new[] { "chinese-traditional", "latin", "latin-ext" } },
+        { "zhTW", new[] { "chinese-traditional", "chinese-hongkong", "latin", "latin-ext" } },
         { "jaJP", new[] { "japanese", "latin", "latin-ext" } },
         { "koKR", new[] { "korean", "latin", "latin-ext" } }
     };
@@ -127,7 +127,7 @@ public class GoogleFontsService : IGoogleFontsService
         Directory.CreateDirectory(targetDir);
 
         // Generate file name
-        var fileName = $"{fontFamily.Family.Replace(" ", "")}-{VariantToFileName(variant)}.ttf";
+        var fileName = $"{SanitizeFileName(fontFamily.Family)}-{VariantToFileName(variant)}.ttf";
         var targetPath = Path.Combine(targetDir, fileName);
 
         // Handle file name collision
