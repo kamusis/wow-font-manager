@@ -2,7 +2,7 @@
 
 A specialized font management tool designed for World of Warcraft players to browse, preview, and replace game fonts with ease.
 
-![Screenshot](https://s2.loli.net/2025/10/28/hIdXWDy4MJg8nzN.png)
+![Screenshot](https://s2.loli.net/2025/11/05/PWxoysftSYwa1UV.png)
 
 ## Features
 

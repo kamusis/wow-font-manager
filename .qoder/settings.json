@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!C:\\Users\\kamus\\CascadeProjects\\wow-font-manager/**)",
+      "Edit(!C:\\Users\\kamus\\CascadeProjects\\wow-font-manager/**)"
+    ],
+    "allow": [
+      "Read(C:\\Users\\kamus\\CascadeProjects\\wow-font-manager/**)",
+      "Edit(C:\\Users\\kamus\\CascadeProjects\\wow-font-manager/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}
