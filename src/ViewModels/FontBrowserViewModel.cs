@@ -423,7 +423,7 @@ public partial class FontBrowserViewModel : ViewModelBase
     /// </summary>
     private bool ValidateWoWInstallPath(string path)
     {
-        var validClientDirs = new[] { "_retail_", "_classic_", "_classic_era_", "_ptr_", "_xptr_", "_beta_" };
+        var validClientDirs = new[] { "_retail_", "_classic_", "_classic_era_", "_classic_titan_", "_ptr_", "_xptr_", "_beta_" };
         var dirName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         
         if (!validClientDirs.Contains(dirName, StringComparer.OrdinalIgnoreCase))

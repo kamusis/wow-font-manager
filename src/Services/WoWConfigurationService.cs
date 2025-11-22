@@ -157,15 +157,40 @@ public class WoWConfigurationService
     /// </summary>
     public async Task<WoWClientConfiguration> GetClientConfigurationAsync()
     {
+        // Try to use the client service to validate and get configuration first
+        var config = await _woWClientService.ValidateClientPathAsync(_currentInstallPath);
+        if (config != null)
+        {
+            return config;
+        }
+
+        // Fallback if validation fails (e.g. fonts folder missing)
         var localeResult = await DetectLocaleAsync();
         
         return new WoWClientConfiguration
         {
-            ClientType = WoWClientType.Retail,
+            ClientType = DetectClientTypeFromPath(_currentInstallPath),
             InstallationPath = GetWoWInstallationPath(),
             FontsPath = GetFontsPath(),
             Locale = localeResult.Locale,
             IsValid = ValidateInstallation().IsValid
+        };
+    }
+
+    private WoWClientType DetectClientTypeFromPath(string path)
+    {
+        var dirName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        
+        return dirName?.ToLowerInvariant() switch
+        {
+            "_retail_" => WoWClientType.Retail,
+            "_classic_" => WoWClientType.Classic,
+            "_classic_era_" => WoWClientType.ClassicEra,
+            "_classic_titan_" => WoWClientType.ClassicTitan,
+            "_ptr_" => WoWClientType.PTR,
+            "_xptr_" => WoWClientType.XPTR,
+            "_beta_" => WoWClientType.Beta,
+            _ => WoWClientType.Retail // Default fallback
         };
     }
 

@@ -60,5 +60,9 @@ public enum WoWClientType
 {
     Retail,
     Classic,
-    ClassicEra
+    ClassicEra,
+    ClassicTitan,
+    PTR,
+    XPTR,
+    Beta
 }

@@ -39,6 +39,10 @@ public class WoWClientService : IWoWClientService
             await TryDetectClient(clients, basePath, "_retail_", WoWClientType.Retail);
             await TryDetectClient(clients, basePath, "_classic_", WoWClientType.Classic);
             await TryDetectClient(clients, basePath, "_classic_era_", WoWClientType.ClassicEra);
+            await TryDetectClient(clients, basePath, "_classic_titan_", WoWClientType.ClassicTitan);
+            await TryDetectClient(clients, basePath, "_ptr_", WoWClientType.PTR);
+            await TryDetectClient(clients, basePath, "_xptr_", WoWClientType.XPTR);
+            await TryDetectClient(clients, basePath, "_beta_", WoWClientType.Beta);
         }
 
         return clients;
@@ -172,6 +176,10 @@ public class WoWClientService : IWoWClientService
             WoWClientType.Retail => "World of Warcraft (Retail)",
             WoWClientType.Classic => "World of Warcraft Classic",
             WoWClientType.ClassicEra => "World of Warcraft Classic Era",
+            WoWClientType.ClassicTitan => "World of Warcraft Classic Titan",
+            WoWClientType.PTR => "World of Warcraft PTR",
+            WoWClientType.XPTR => "World of Warcraft XPTR",
+            WoWClientType.Beta => "World of Warcraft Beta",
             _ => "Unknown"
         };
     }
@@ -226,6 +234,10 @@ public class WoWClientService : IWoWClientService
             "_retail_" => WoWClientType.Retail,
             "_classic_" => WoWClientType.Classic,
             "_classic_era_" => WoWClientType.ClassicEra,
+            "_classic_titan_" => WoWClientType.ClassicTitan,
+            "_ptr_" => WoWClientType.PTR,
+            "_xptr_" => WoWClientType.XPTR,
+            "_beta_" => WoWClientType.Beta,
             _ => null
         };
     }
